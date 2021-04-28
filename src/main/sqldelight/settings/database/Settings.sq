@@ -1,0 +1,34 @@
+import data.local.GameId;
+import data.local.SettingsId;
+
+CREATE TABLE settings (
+    id INTEGER AS SettingsId PRIMARY KEY,
+    selectedGameId TEXT AS GameId,
+    FOREIGN KEY(selectedGameId) REFERENCES game(id)
+);
+
+CREATE TABLE game (
+    id TEXT AS GameId PRIMARY KEY,
+    abbreviation TEXT NOT NULL,
+    name TEXT NOT NULL
+);
+
+INSERT INTO settings (id, selectedGameId)
+VALUES (1, NULL);
+
+getSelectedGame:
+SELECT *
+FROM game
+WHERE id
+IN (SELECT selectedGameId
+    FROM settings
+    LIMIT 1)
+LIMIT 1;
+
+updateSelectedGameId:
+INSERT OR REPLACE INTO settings (id, selectedGameId)
+VALUES (1, ?);
+
+insertGame:
+INSERT OR REPLACE INTO game (id, abbreviation, name)
+VALUES ?;
