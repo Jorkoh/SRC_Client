@@ -1,4 +1,4 @@
-package ui.screens.gameselector
+package ui.screens.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
@@ -22,11 +22,11 @@ import androidx.compose.ui.unit.dp
 import settings.database.Game
 
 @Composable
-fun GameSelectorScreen() {
+fun SettingsComponent() {
     val scope = rememberCoroutineScope()
     val viewModel = remember { GameSelectorViewModel(scope) }
 
-    GameSelectorContent(
+    SettingsComponentContent(
         uiState = viewModel.gamesSelectorUIState.collectAsState(),
         selectedGame = viewModel.selectedGame.collectAsState(),
         onQueryChanged = viewModel::onQueryChanged,
@@ -37,7 +37,7 @@ fun GameSelectorScreen() {
 }
 
 @Composable
-fun GameSelectorContent(
+fun SettingsComponentContent(
     uiState: State<GamesSelectorUIState>,
     selectedGame: State<Game?>,
     onQueryChanged: (newQuery: String) -> Unit,
@@ -53,7 +53,7 @@ fun GameSelectorContent(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxWidth()
     ) {
         Spacer(Modifier.height(20.dp))
         GameSelectorSearchField(
@@ -122,7 +122,6 @@ fun GameSelectorDropdown(
                     CircularProgressIndicator(modifier = Modifier.padding(vertical = 10.dp))
                 }
                 is GamesSelectorUIState.FailedToLoadQuery -> item {
-                    Spacer(Modifier.height(10.dp))
                     Text(state.message, modifier = Modifier.padding(vertical = 10.dp))
                 }
                 is GamesSelectorUIState.LoadedQuery -> {

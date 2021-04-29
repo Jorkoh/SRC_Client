@@ -5,7 +5,8 @@ import data.local.SettingsRepository
 import data.remote.SRCService
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
-import ui.screens.gameselector.GameSelectorScreen
+import ui.screens.home.HomeScreen
+import ui.screens.home.SettingsComponent
 import ui.theme.SRCClientTheme
 import java.awt.Dimension
 
@@ -21,6 +22,6 @@ fun main() = Window {
     }
 
     SRCClientTheme {
-        GameSelectorScreen()
+        HomeScreen()
     }
 }

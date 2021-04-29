@@ -49,7 +49,7 @@ data class RunResponse(
     @Json(name = "times")
     val times: Times,
     @Json(name = "videos")
-    val videos: Videos,
+    val videos: Videos?,
 )
 
 @JsonClass(generateAdapter = true)
@@ -109,6 +109,8 @@ data class Variable(
 
 @JsonClass(generateAdapter = true)
 data class Videos(
+    @Json(name = "text")
+    val text : String?,
     @Json(name = "links")
-    val links: List<Link>
+    val links: List<Link>?
 )

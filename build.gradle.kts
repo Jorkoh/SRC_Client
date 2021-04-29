@@ -59,6 +59,7 @@ tasks.withType<KotlinCompile>() {
     kotlinOptions.jvmTarget = "11"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
+    kotlinOptions.freeCompilerArgs += "-Xopt-in=androidx.compose.material.ExperimentalMaterialApi"
     kotlinOptions.freeCompilerArgs += "-Xinline-classes"
 }
 
