@@ -3,7 +3,7 @@ package data.remote.adapters
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.ToJson
-import data.remote.responses.Variable
+import data.local.entities.Variable
 import data.remote.responses.Variables
 import data.remote.utils.readObjectToList
 

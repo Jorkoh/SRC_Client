@@ -3,6 +3,7 @@ package data.remote.responses
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import data.local.entities.Status
+import data.local.entities.Variable
 import java.util.*
 
 @JsonClass(generateAdapter = true)
@@ -37,13 +38,13 @@ data class RunResponse(
     @Json(name = "comment")
     val comment: String?,
     @Json(name = "date")
-    val date: String,
+    val runDate: Date,
     @Json(name = "links")
     val links: List<Link>,
     @Json(name = "splits")
     val splits: Link?,
     @Json(name = "submitted")
-    val submitted: String,
+    val submissionDate: Date?,
     @Json(name = "system")
     val system: GameSystem,
     @Json(name = "times")
@@ -61,7 +62,7 @@ data class Players(
 @JsonClass(generateAdapter = true)
 data class RunStatus(
     @Json(name = "status")
-    val status: Status,
+    val value: Status,
     @Json(name = "examiner")
     val verifierId: String?,
     @Json(name = "verify-date")
@@ -100,11 +101,6 @@ data class Times(
 
 data class Variables(
     val values: List<Variable>
-)
-
-data class Variable(
-    val id: String,
-    val value: String
 )
 
 @JsonClass(generateAdapter = true)

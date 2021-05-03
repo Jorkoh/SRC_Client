@@ -29,6 +29,19 @@ updateSelectedGameId:
 INSERT OR REPLACE INTO settings (id, selectedGameId)
 VALUES (1, ?);
 
+getGameCount:
+SELECT COUNT(*)
+FROM game;
+
+getAllGames:
+SELECT *
+FROM game;
+
+getAllGamesFiltered:
+SELECT *
+FROM game
+WHERE name LIKE '%'||?||'%';
+
 insertGame:
 INSERT OR REPLACE INTO game (id, abbreviation, name)
 VALUES ?;

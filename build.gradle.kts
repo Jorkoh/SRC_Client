@@ -31,8 +31,8 @@ repositories {
 }
 
 sqldelight {
-    database("SettingsDB") { // This will be the name of the generated database class.
-        packageName = "settings.database"
+    database("DatabaseInstance") { // This will be the name of the generated database class.
+        packageName = "persistence.database"
     }
 }
 

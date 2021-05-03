@@ -1,29 +1,26 @@
 package data.local
 
 import com.squareup.sqldelight.ColumnAdapter
-import com.squareup.sqldelight.runtime.coroutines.asFlow
-import com.squareup.sqldelight.runtime.coroutines.mapToList
-import com.squareup.sqldelight.runtime.coroutines.mapToOne
-import com.squareup.sqldelight.runtime.coroutines.mapToOneOrNull
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
-import settings.database.Game
-import settings.database.Settings
-import settings.database.SettingsDB
-import settings.database.SettingsQueries
+import persistence.database.DatabaseInstance
+import persistence.database.Game
+import persistence.database.Settings
 
 inline class SettingsId(val value: Long)
 inline class GameId(val value: String)
+inline class CategoryId(val value: String)
+inline class LevelId(val value: String)
 inline class RunId(val value: String)
+inline class UserId(val value: String)
 
-class SettingsRepository {
-
-    private val database: SettingsDB
+class DatabaseSingleton {
+    val db: DatabaseInstance
 
     init {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY + "db")
         val version = driver.getVersion()
         if (version == 0) {
-            SettingsDB.Schema.create(driver)
+            DatabaseInstance.Schema.create(driver)
             driver.setVersion(1)
         }
 
@@ -35,24 +32,11 @@ class SettingsRepository {
             override fun decode(databaseValue: Long) = SettingsId(databaseValue)
             override fun encode(value: SettingsId) = value.value
         }
-        database = SettingsDB(
+        db = DatabaseInstance(
             driver = driver,
             gameAdapter = Game.Adapter(gameIdAdapter),
             settingsAdapter = Settings.Adapter(settingsIdAdapter, gameIdAdapter)
         )
-    }
-
-    private val settingsQueries: SettingsQueries = database.settingsQueries
-
-    fun getSelectedGame() = settingsQueries.getSelectedGame().asFlow().mapToOneOrNull()
-
-    fun setSelectedGame(newSelectedGame: Game?) {
-        settingsQueries.transaction {
-            if (newSelectedGame != null) {
-                settingsQueries.insertGame(newSelectedGame)
-            }
-            settingsQueries.updateSelectedGameId(newSelectedGame?.id)
-        }
     }
 
     private fun JdbcSqliteDriver.getVersion(): Int {

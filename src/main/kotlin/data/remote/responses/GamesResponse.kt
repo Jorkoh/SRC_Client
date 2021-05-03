@@ -4,15 +4,15 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class PaginatedGamesResponse(
+data class PaginatedBulkGamesResponse(
     @Json(name = "data")
-    val gameResponses: List<GameResponse>,
+    val bulkGameResponses: List<BulkGameResponse>,
     @Json(name = "pagination")
     val pagination: Pagination
 )
 
 @JsonClass(generateAdapter = true)
-data class GameResponse(
+data class BulkGameResponse(
     @Json(name = "abbreviation")
     val abbreviation: String,
     @Json(name = "id")

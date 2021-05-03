@@ -2,6 +2,7 @@ package data.remote.responses
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import data.local.entities.Role
 
 enum class PlayerType(val apiString: String) {
     User("user"),
@@ -21,16 +22,26 @@ data class UserResponse(
     val weblink: String,
     @Json(name = "names")
     val names: Names,
-    @Json(name = "links")
-    val links: List<Link>,
+    @Json(name = "location")
+    val location: Location?,
     @Json(name = "role")
-    val role: String
+    val role: Role
 ) : PlayerResponse(PlayerType.User)
 
 @JsonClass(generateAdapter = true)
 data class GuestResponse(
     @Json(name = "name")
-    val name: String,
-    @Json(name = "links")
-    val links: List<Link>,
+    val name: String
 ) : PlayerResponse(PlayerType.Guest)
+
+@JsonClass(generateAdapter = true)
+data class Location(
+    @Json(name = "country")
+    val country: Country
+)
+
+@JsonClass(generateAdapter = true)
+data class Country(
+    @Json(name = "code")
+    val code: String
+)

@@ -1,5 +1,6 @@
 package ui.screens.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,8 @@ import androidx.compose.ui.unit.dp
 import data.local.entities.Run
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.awt.Desktop
+import java.net.URI
 
 @Composable
 fun HomeScreen() {
@@ -89,6 +92,7 @@ fun RunItem(run: Run) {
         modifier = Modifier
             .fillMaxWidth()
 //            .clickable { onRunSelected(game) }
+            .clickable { Desktop.getDesktop().browse(URI(run.weblink)) }
             .padding(vertical = 10.dp)
     ) {
         Text(

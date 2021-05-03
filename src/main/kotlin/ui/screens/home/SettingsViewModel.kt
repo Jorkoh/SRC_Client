@@ -1,7 +1,7 @@
 package ui.screens.home
 
 import data.SRCRepository
-import data.local.SettingsRepository
+import data.local.SettingsDAO
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,11 +10,11 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import settings.database.Game
+import persistence.database.Game
 
 class GameSelectorViewModel(private val scope: CoroutineScope) : KoinComponent {
 
-    private val settings by inject<SettingsRepository>()
+    private val settings by inject<SettingsDAO>()
     private val srcRepository by inject<SRCRepository>()
 
     init {
