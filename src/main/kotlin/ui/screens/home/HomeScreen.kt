@@ -31,7 +31,7 @@ private fun HomeScreenContent(
 ) {
     val scaffoldState = rememberBackdropScaffoldState(BackdropValue.Concealed)
 
-    if (uiState.value.gameDialogOpen) {
+    if (uiState.value.gameSelectorIsOpen) {
         GameDialog(onDismiss = onChangeGameDialogDismissed)
     }
 
@@ -39,13 +39,17 @@ private fun HomeScreenContent(
         scaffoldState = scaffoldState,
         appBar = {
             HomeTopAppBar(
-                scope = scope,
-                scaffoldState = scaffoldState,
+                gameTitle = (uiState.value as? HomeUIState.Ready)?.game?.name ?: "...",
+                onFiltersButtonClicked = {
+                    scope.launch {
+                        with(scaffoldState) { if (isConcealed) reveal() else conceal() }
+                    }
+                },
                 onChangeGameButtonClicked = onChangeGameButtonClicked
             )
         },
-        frontLayerContent = { RunsComponent() },
-        backLayerContent = { FiltersComponent() },
+        frontLayerContent = { RunsComponent(uiState.value.runsUIState) },
+        backLayerContent = { FiltersComponent(uiState.value.filtersUIState) },
         backLayerBackgroundColor = MaterialTheme.colors.offWhite,
         frontLayerShape = MaterialTheme.shapes.large
     )
@@ -53,14 +57,14 @@ private fun HomeScreenContent(
 
 @Composable
 private fun HomeTopAppBar(
-    scope: CoroutineScope,
-    scaffoldState: BackdropScaffoldState,
-    onChangeGameButtonClicked: () -> Unit
+    gameTitle: String,
+    onChangeGameButtonClicked: () -> Unit,
+    onFiltersButtonClicked: () -> Unit
 ) {
     TopAppBar(
-        title = { Text(text = "SRC Client") },
+        title = { Text(text = "SRC Client - $gameTitle") },
         navigationIcon = { GameDialogButton(onChangeGameButtonClicked) },
-        actions = { FiltersButton(scope, scaffoldState) }
+        actions = { FiltersButton(onFiltersButtonClicked) }
     )
 }
 
@@ -69,35 +73,26 @@ private fun GameDialogButton(
     onClick: () -> Unit
 ) {
     IconButton(
-        onClick = onClick,
-        content = {
-            Icon(
-                imageVector = Icons.Default.Edit,
-                contentDescription = "Change game"
-            )
-        })
+        onClick = onClick
+    ) {
+        Icon(
+            imageVector = Icons.Default.Edit,
+            contentDescription = "Change game"
+        )
+    }
 }
 
 @Composable
 private fun FiltersButton(
-    scope: CoroutineScope,
-    scaffoldState: BackdropScaffoldState
+    onClick: () -> Unit
 ) {
     IconButton(
-        onClick = {
-            scope.launch {
-                if (scaffoldState.isConcealed) scaffoldState.reveal() else scaffoldState.conceal()
-            }
-        },
-        content = {
-            // TODO change this to IconToggleButton()
-            Icon(
-                imageVector = vectorXmlResource("ic_filter.xml"),
-                contentDescription = if (scaffoldState.isConcealed) {
-                    "Open filters"
-                } else {
-                    "Close filters"
-                }
-            )
-        })
+        onClick = onClick
+    ) {
+        // TODO change this to IconToggleButton?
+        Icon(
+            imageVector = vectorXmlResource("ic_filter.xml"),
+            contentDescription = "Filters"
+        )
+    }
 }

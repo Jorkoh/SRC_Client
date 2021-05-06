@@ -14,31 +14,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import data.local.entities.Run
+import ui.screens.home.HomeUIState.RunsUIState.*
 import java.awt.Desktop
 import java.net.URI
 
 @Composable
-fun RunsComponent(){
-    val scope = rememberCoroutineScope()
-    val viewModel = remember { RunsViewModel(scope) }
-
-    RunsComponentContent(
-        viewModel.runsUIState.collectAsState()
-    )
-}
-
-@Composable
-private fun RunsComponentContent(uiState: State<RunsUIState>) {
-    LazyColumn {
-        when (val state = uiState.value) {
-            is RunsUIState.FailedToLoad -> item {
-                Text(state.message, modifier = Modifier.padding(vertical = 10.dp))
+fun RunsComponent(uiState: HomeUIState.RunsUIState) {
+    LazyColumn(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        when (uiState) {
+            is FailedToLoadRuns -> item {
+                Text(uiState.message, modifier = Modifier.padding(vertical = 10.dp))
             }
-            is RunsUIState.Loading -> item {
+            is LoadingRuns -> item {
                 CircularProgressIndicator(modifier = Modifier.padding(vertical = 10.dp))
             }
-            is RunsUIState.Loaded -> {
-                items(state.runs) { run ->
+            is LoadedRuns -> {
+                items(uiState.runs) { run ->
                     RunItem(run)
                 }
             }

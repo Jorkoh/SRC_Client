@@ -32,7 +32,7 @@ fun GameDialog(
     val viewModel = remember { GameViewModel(scope) }
 
     GameDialogContent(
-        uiState = viewModel.gamesSelectorUIState.collectAsState(),
+        uiState = viewModel.gameSelectorUIState.collectAsState(),
         selectedGame = viewModel.selectedGame,
         onQueryChanged = viewModel::onQueryChanged,
         onGameSelected = viewModel::onGameSelected,
@@ -48,7 +48,7 @@ fun GameDialog(
 
 @Composable
 private fun GameDialogContent(
-    uiState: State<GamesSelectorUIState>,
+    uiState: State<GameSelectorUIState>,
     selectedGame: State<Game?>,
     onQueryChanged: (newQuery: String) -> Unit,
     onGameSelected: (newGame: Game) -> Unit,
@@ -63,11 +63,11 @@ private fun GameDialogContent(
             title = "SRC Client",
             resizable = false,
             undecorated = true,
-            size = IntSize(380, 400)
+            size = IntSize(400, 400)
         )
     ) {
         Surface(
-            modifier = Modifier.size(380.dp, 400.dp),
+            modifier = Modifier.size(400.dp, 400.dp),
             shape = MaterialTheme.shapes.large,
             color = MaterialTheme.colors.surface,
             border = BorderStroke(width = 1.dp, color = MaterialTheme.colors.primary)
@@ -85,39 +85,52 @@ private fun GameDialogContent(
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(
-                        onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = MaterialTheme.colors.rejectRed,
-                            contentColor = MaterialTheme.colors.onPrimary
-                        )
-                    ) {
-                        Text("Cancel")
-                    }
-                    Spacer(Modifier.width(16.dp))
-                    TextButton(
-                        onClick = onSave,
-                        enabled = selectedGame.value != null,
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = MaterialTheme.colors.approveGreen,
-                            contentColor = MaterialTheme.colors.onPrimary
-                        )
-                    ) {
-                        Text("Save")
-                    }
-                }
+                GameDialogButtons(
+                    onDismiss = onDismiss,
+                    onSave = onSave,
+                    saveEnabled = selectedGame.value != null
+                )
             }
         }
     }
 }
 
 @Composable
+private fun GameDialogButtons(
+    onDismiss: () -> Unit,
+    onSave: () -> Unit,
+    saveEnabled: Boolean
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End
+    ) {
+        TextButton(
+            onClick = onDismiss,
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = MaterialTheme.colors.rejectRed,
+                contentColor = MaterialTheme.colors.onPrimary
+            )
+        ) {
+            Text("Cancel")
+        }
+        Spacer(Modifier.width(16.dp))
+        TextButton(
+            onClick = onSave,
+            enabled = saveEnabled,
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = MaterialTheme.colors.approveGreen,
+                contentColor = MaterialTheme.colors.onPrimary
+            )
+        ) {
+            Text("Save")
+        }
+    }
+}
+
+@Composable
 fun GameSelector(
-    uiState: State<GamesSelectorUIState>,
+    uiState: State<GameSelectorUIState>,
     selectedGame: State<Game?>,
     onQueryChanged: (newQuery: String) -> Unit,
     onGameSelected: (newGame: Game) -> Unit,
@@ -126,7 +139,7 @@ fun GameSelector(
     modifier: Modifier,
 ) {
     val (searchFieldIsFocused, setSearchFieldIsFocused) = remember { mutableStateOf(false) }
-    if (searchFieldIsFocused && uiState.value is GamesSelectorUIState.NotSearching) {
+    if (searchFieldIsFocused && uiState.value is GameSelectorUIState.NotSearching) {
         // Removes the focus of the OutlinedTextField once a game is selected from the dropdown
         LocalFocusManager.current.clearFocus()
     }
@@ -150,16 +163,15 @@ fun GameSelector(
 
 @Composable
 fun GameSelectorSearchField(
-    uiState: State<GamesSelectorUIState>,
+    uiState: State<GameSelectorUIState>,
     selectedGame: State<Game?>,
     onQueryChanged: (newQuery: String) -> Unit,
     onSearchStarted: () -> Unit,
     onSearchStopped: () -> Unit,
     setSearchFieldIsFocused: (Boolean) -> Unit
 ) {
-    // TODO make this wider
     OutlinedTextField(
-        value = if (uiState.value is GamesSelectorUIState.NotSearching) {
+        value = if (uiState.value is GameSelectorUIState.NotSearching) {
             selectedGame.value?.name ?: ""
         } else {
             uiState.value.query
@@ -169,16 +181,16 @@ fun GameSelectorSearchField(
             Text("Game")
         },
         modifier = Modifier.onFocusChanged { newFocusState ->
-            if (newFocusState == FocusState.Active && uiState.value is GamesSelectorUIState.NotSearching) {
+            if (newFocusState == FocusState.Active && uiState.value is GameSelectorUIState.NotSearching) {
                 onSearchStarted()
-            } else if (newFocusState == FocusState.Inactive && uiState.value !is GamesSelectorUIState.NotSearching) {
+            } else if (newFocusState == FocusState.Inactive && uiState.value !is GameSelectorUIState.NotSearching) {
                 onSearchStopped()
             }
             setSearchFieldIsFocused(newFocusState == FocusState.Active)
-        },
-        isError = uiState.value is GamesSelectorUIState.NotSearching && selectedGame.value == null,
+        }.fillMaxWidth(),
+        isError = uiState.value is GameSelectorUIState.NotSearching && selectedGame.value == null,
         trailingIcon = {
-            if (uiState.value is GamesSelectorUIState.NotSearching && selectedGame.value == null) {
+            if (uiState.value is GameSelectorUIState.NotSearching && selectedGame.value == null) {
                 Icon(Icons.Default.Warning, null)
             }
         }
@@ -187,24 +199,24 @@ fun GameSelectorSearchField(
 
 @Composable
 fun GameSelectorDropdown(
-    uiState: State<GamesSelectorUIState>,
+    uiState: State<GameSelectorUIState>,
     onGameSelected: (newGame: Game) -> Unit
 ) {
-    AnimatedVisibility(visible = uiState.value !is GamesSelectorUIState.NotSearching) {
+    AnimatedVisibility(visible = uiState.value !is GameSelectorUIState.NotSearching) {
         LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxHeight()
-                .width(TextFieldDefaults.MinWidth)
+                .fillMaxWidth()
         ) {
             when (val state = uiState.value) {
-                is GamesSelectorUIState.LoadingQuery -> item {
+                is GameSelectorUIState.LoadingQuery -> item {
                     CircularProgressIndicator(modifier = Modifier.padding(vertical = 10.dp))
                 }
-                is GamesSelectorUIState.FailedToLoadQuery -> item {
+                is GameSelectorUIState.FailedToLoadQuery -> item {
                     Text(state.message, modifier = Modifier.padding(vertical = 10.dp))
                 }
-                is GamesSelectorUIState.LoadedQuery -> {
+                is GameSelectorUIState.LoadedQuery -> {
                     items(state.games) { game ->
                         GameSelectorItem(game, onGameSelected)
                     }
