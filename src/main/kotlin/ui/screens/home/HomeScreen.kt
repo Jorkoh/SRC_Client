@@ -3,6 +3,7 @@ package ui.screens.home
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.vectorXmlResource
 import kotlinx.coroutines.CoroutineScope
@@ -18,7 +19,8 @@ fun HomeScreen() {
         uiState = viewModel.homeUIState.collectAsState(),
         scope = scope,
         onChangeGameButtonClicked = viewModel::onChangeGameButtonClicked,
-        onChangeGameDialogDismissed = viewModel::onChangeGameDialogDismissed
+        onChangeGameDialogDismissed = viewModel::onChangeGameDialogDismissed,
+        onRefreshButtonClicked = viewModel::refreshRuns
     )
 }
 
@@ -27,7 +29,8 @@ private fun HomeScreenContent(
     uiState: State<HomeUIState>,
     scope: CoroutineScope,
     onChangeGameButtonClicked: () -> Unit,
-    onChangeGameDialogDismissed: () -> Unit
+    onChangeGameDialogDismissed: () -> Unit,
+    onRefreshButtonClicked: () -> Unit
 ) {
     val scaffoldState = rememberBackdropScaffoldState(BackdropValue.Concealed)
 
@@ -40,12 +43,13 @@ private fun HomeScreenContent(
         appBar = {
             HomeTopAppBar(
                 gameTitle = (uiState.value as? HomeUIState.Ready)?.game?.name ?: "...",
+                onChangeGameButtonClicked = onChangeGameButtonClicked,
+                onRefreshButtonClicked = onRefreshButtonClicked,
                 onFiltersButtonClicked = {
                     scope.launch {
                         with(scaffoldState) { if (isConcealed) reveal() else conceal() }
                     }
                 },
-                onChangeGameButtonClicked = onChangeGameButtonClicked
             )
         },
         frontLayerContent = { RunsComponent(uiState.value.runsUIState) },
@@ -59,12 +63,15 @@ private fun HomeScreenContent(
 private fun HomeTopAppBar(
     gameTitle: String,
     onChangeGameButtonClicked: () -> Unit,
+    onRefreshButtonClicked: () -> Unit,
     onFiltersButtonClicked: () -> Unit
 ) {
     TopAppBar(
-        title = { Text(text = "SRC Client - $gameTitle") },
+        title = { Text(gameTitle) },
         navigationIcon = { GameDialogButton(onChangeGameButtonClicked) },
-        actions = { FiltersButton(onFiltersButtonClicked) }
+        actions = {
+        RefreshButton(onRefreshButtonClicked)
+            FiltersButton(onFiltersButtonClicked) }
     )
 }
 
@@ -78,6 +85,20 @@ private fun GameDialogButton(
         Icon(
             imageVector = Icons.Default.Edit,
             contentDescription = "Change game"
+        )
+    }
+}
+
+@Composable
+private fun RefreshButton(
+    onClick: () -> Unit
+) {
+    IconButton(
+        onClick = onClick
+    ) {
+        Icon(
+            imageVector = Icons.Default.Refresh,
+            contentDescription = "Refresh"
         )
     }
 }

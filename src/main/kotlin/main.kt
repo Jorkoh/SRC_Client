@@ -19,6 +19,7 @@ import ui.theme.SRCClientTheme
 import java.awt.Dimension
 
 fun main() = Window(
+    title = "SRC Client by Kohru",
     size = IntSize(650, 900)
 ) {
     AppManager.windows[0].window.minimumSize = Dimension(650, 900)

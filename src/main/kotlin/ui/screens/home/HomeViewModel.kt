@@ -69,7 +69,7 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
         setGameSelectorIsOpen(false)
     }
 
-    private fun refreshRuns() {
+    fun refreshRuns() {
         // TODO this needs to apply the filter settings
         runsQueryJob?.cancel()
         setRunsUIState(HomeUIState.RunsUIState.LoadingRuns)
