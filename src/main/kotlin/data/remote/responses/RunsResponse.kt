@@ -3,7 +3,6 @@ package data.remote.responses
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import data.local.entities.Status
-import data.local.entities.Variable
 import java.util.*
 
 @JsonClass(generateAdapter = true)
@@ -30,7 +29,7 @@ data class RunResponse(
     @Json(name = "level")
     val levelId: String?,
     @Json(name = "values")
-    val variables: Variables,
+    val variablesAndValues: VariablesAndValuesResponses,
 
     @Json(name = "players")
     val players: Players,
@@ -86,27 +85,32 @@ data class Times(
     @Json(name = "primary_t")
     val primaryT: Double,
     @Json(name = "realtime")
-    val realtime: String?,
+    val realTime: String?,
     @Json(name = "realtime_t")
-    val realtimeT: Double?,
+    val realTimeT: Double?,
     @Json(name = "realtime_noloads")
-    val realtimeNoloads: String?,
+    val realTimeNoLoads: String?,
     @Json(name = "realtime_noloads_t")
-    val realtimeNoloadsT: Double?,
+    val realTimeNoLoadsT: Double?,
     @Json(name = "ingame")
-    val ingame: String?,
+    val inGame: String?,
     @Json(name = "ingame_t")
-    val ingameT: Double?,
+    val inGameT: Double?,
 )
 
-data class Variables(
-    val values: List<Variable>
+data class VariablesAndValuesResponses(
+    val variablesAndValues: List<VariableAndValueResponse>
+)
+
+data class VariableAndValueResponse(
+    val variableId: String,
+    val valueId: String
 )
 
 @JsonClass(generateAdapter = true)
 data class Videos(
     @Json(name = "text")
-    val text : String?,
+    val text: String?,
     @Json(name = "links")
     val links: List<Link>?
 )

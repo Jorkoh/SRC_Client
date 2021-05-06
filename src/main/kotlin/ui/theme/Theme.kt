@@ -1,5 +1,6 @@
 package ui.theme
 
+import androidx.compose.material.Colors
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
@@ -23,3 +24,12 @@ fun SRCClientTheme(darkTheme: Boolean = false, content: @Composable () -> Unit) 
         content = content
     )
 }
+
+val Colors.offWhite: Color
+    get() = CustomColors.offWhite
+
+val Colors.approveGreen: Color
+    get() = CustomColors.approveGreen
+
+val Colors.rejectRed: Color
+    get() = CustomColors.rejectRed

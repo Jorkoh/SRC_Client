@@ -3,27 +3,19 @@ package data.local.entities
 import data.local.*
 import java.util.*
 
-// TODO move this somewhere else
 enum class Status(val apiString: String) {
     Pending("new"),
     Approved("verified"),
     Rejected("rejected")
 }
 
-// TODO move this somewhere else
-data class Variable(
-    val id: String,
-    val value: String
-)
-
-// TODO add system from response?
 data class Run(
     val runId: RunId,
 
     val gameId: GameId,
     val categoryId: CategoryId,
     val levelId: LevelId?,
-    val variables: List<Variable>,
+    val variablesAndValues: List<VariableAndValue>,
 
     val status: Status,
     val verifierId: UserId?,

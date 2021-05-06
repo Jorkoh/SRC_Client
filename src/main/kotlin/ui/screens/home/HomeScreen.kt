@@ -1,104 +1,103 @@
 package ui.screens.home
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.vectorXmlResource
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import data.local.entities.Run
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.awt.Desktop
-import java.net.URI
+import ui.theme.offWhite
 
 @Composable
 fun HomeScreen() {
     val scope = rememberCoroutineScope()
-    val viewModel = remember { RunsViewModel(scope) }
+    val viewModel = remember { HomeViewModel(scope) }
 
     HomeScreenContent(
-        uiState = viewModel.runsUIState.collectAsState(),
+        uiState = viewModel.homeUIState.collectAsState(),
         scope = scope,
+        onChangeGameButtonClicked = viewModel::onChangeGameButtonClicked,
+        onChangeGameDialogDismissed = viewModel::onChangeGameDialogDismissed
     )
 }
 
 @Composable
-fun HomeScreenContent(
-    uiState: State<RunsUIState>,
-    scope: CoroutineScope
+private fun HomeScreenContent(
+    uiState: State<HomeUIState>,
+    scope: CoroutineScope,
+    onChangeGameButtonClicked: () -> Unit,
+    onChangeGameDialogDismissed: () -> Unit
 ) {
     val scaffoldState = rememberBackdropScaffoldState(BackdropValue.Concealed)
 
+    if (uiState.value.gameDialogOpen) {
+        GameDialog(onDismiss = onChangeGameDialogDismissed)
+    }
+
     BackdropScaffold(
         scaffoldState = scaffoldState,
-        appBar = { HomeTopAppBar(scope, scaffoldState) },
-        frontLayerContent = { RunsList(uiState) },
-        backLayerContent = { SettingsComponent() }
+        appBar = {
+            HomeTopAppBar(
+                scope = scope,
+                scaffoldState = scaffoldState,
+                onChangeGameButtonClicked = onChangeGameButtonClicked
+            )
+        },
+        frontLayerContent = { RunsComponent() },
+        backLayerContent = { FiltersComponent() },
+        backLayerBackgroundColor = MaterialTheme.colors.offWhite,
+        frontLayerShape = MaterialTheme.shapes.large
     )
 }
 
 @Composable
-fun HomeTopAppBar(
+private fun HomeTopAppBar(
     scope: CoroutineScope,
-    scaffoldState: BackdropScaffoldState
+    scaffoldState: BackdropScaffoldState,
+    onChangeGameButtonClicked: () -> Unit
 ) {
     TopAppBar(
         title = { Text(text = "SRC Client") },
-        actions = {
-            if (scaffoldState.isConcealed) {
-                IconButton(onClick = { scope.launch { scaffoldState.reveal() } }) {
-                    Icon(vectorXmlResource("ic_filter.xml"), contentDescription = "Open filters")
-                }
-            } else {
-                IconButton(onClick = { scope.launch { scaffoldState.conceal() } }) {
-                    Icon(vectorXmlResource("ic_filter.xml"), contentDescription = "Close filters")
-                }
-            }
-        }
+        navigationIcon = { GameDialogButton(onChangeGameButtonClicked) },
+        actions = { FiltersButton(scope, scaffoldState) }
     )
 }
 
 @Composable
-fun RunsList(uiState: State<RunsUIState>) {
-    LazyColumn {
-        when (val state = uiState.value) {
-            is RunsUIState.FailedToLoad -> item {
-                Text(state.message, modifier = Modifier.padding(vertical = 10.dp))
-            }
-            is RunsUIState.Loading -> item {
-                CircularProgressIndicator(modifier = Modifier.padding(vertical = 10.dp))
-            }
-            is RunsUIState.Loaded -> {
-                items(state.runs) { run ->
-                    RunItem(run)
-                }
-            }
-        }
-    }
+private fun GameDialogButton(
+    onClick: () -> Unit
+) {
+    IconButton(
+        onClick = onClick,
+        content = {
+            Icon(
+                imageVector = Icons.Default.Edit,
+                contentDescription = "Change game"
+            )
+        })
 }
 
 @Composable
-fun RunItem(run: Run) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-//            .clickable { onRunSelected(game) }
-            .clickable { Desktop.getDesktop().browse(URI(run.weblink)) }
-            .padding(vertical = 10.dp)
-    ) {
-        Text(
-            text = run.runId.value,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
+private fun FiltersButton(
+    scope: CoroutineScope,
+    scaffoldState: BackdropScaffoldState
+) {
+    IconButton(
+        onClick = {
+            scope.launch {
+                if (scaffoldState.isConcealed) scaffoldState.reveal() else scaffoldState.conceal()
+            }
+        },
+        content = {
+            // TODO change this to IconToggleButton()
+            Icon(
+                imageVector = vectorXmlResource("ic_filter.xml"),
+                contentDescription = if (scaffoldState.isConcealed) {
+                    "Open filters"
+                } else {
+                    "Close filters"
+                }
+            )
+        })
 }

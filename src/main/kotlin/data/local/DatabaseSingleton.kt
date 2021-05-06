@@ -3,15 +3,24 @@ package data.local
 import com.squareup.sqldelight.ColumnAdapter
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import persistence.database.DatabaseInstance
+import persistence.database.Filters
 import persistence.database.Game
-import persistence.database.Settings
 
 inline class SettingsId(val value: Long)
 inline class GameId(val value: String)
 inline class CategoryId(val value: String)
+inline class VariableId(val value: String)
+inline class ValueId(val value: String)
 inline class LevelId(val value: String)
 inline class RunId(val value: String)
 inline class UserId(val value: String)
+inline class GameTypeId(val value: String)
+inline class PlatformId(val value: String)
+inline class RegionId(val value: String)
+inline class GenreId(val value: String)
+inline class EngineId(val value: String)
+inline class DeveloperId(val value: String)
+inline class PublisherId(val value: String)
 
 class DatabaseSingleton {
     val db: DatabaseInstance
@@ -35,7 +44,7 @@ class DatabaseSingleton {
         db = DatabaseInstance(
             driver = driver,
             gameAdapter = Game.Adapter(gameIdAdapter),
-            settingsAdapter = Settings.Adapter(settingsIdAdapter, gameIdAdapter)
+            filtersAdapter = Filters.Adapter(settingsIdAdapter, gameIdAdapter)
         )
     }
 

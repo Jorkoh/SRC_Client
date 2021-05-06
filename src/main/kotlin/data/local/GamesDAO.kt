@@ -10,11 +10,14 @@ class GamesDAO(databaseSingleton: DatabaseSingleton) {
 
     private val queries: DatabaseQueries = databaseSingleton.db.databaseQueries
 
-    fun getGames(query: String?): Flow<List<Game>> {
+    fun getGames(query: String?, maxCount: Int = 10): Flow<List<Game>> {
         return if (query.isNullOrEmpty()) {
             queries.getAllGames().asFlow().mapToList()
         } else {
-            queries.getAllGamesFiltered(query).asFlow().mapToList()
+            queries.getAllGamesFiltered(
+                nameMatch = query.replace(" ", "%"),
+                limit = maxCount.toLong()
+            ).asFlow().mapToList()
         }
     }
 

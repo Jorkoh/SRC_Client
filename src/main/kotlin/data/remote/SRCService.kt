@@ -4,9 +4,7 @@ import data.remote.utils.HttpRequestInterceptor
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
-import data.remote.adapters.RoleAdapter
-import data.remote.adapters.StatusAdapter
-import data.remote.adapters.VariablesAdapter
+import data.remote.adapters.*
 import data.remote.responses.*
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -20,9 +18,11 @@ interface SRCService {
 
     // https://github.com/speedruncomorg/api/blob/master/version1/games.md
     @GET("games/{id}")
-    suspend fun fetchGame(
+    suspend fun fetchFullGame(
         @Path("id") gameId: String,
-    ): PaginatedBulkGamesResponse
+        // Fixed query params
+        @Query("embed") embed: String = "categories.variables,moderators,levels",
+    ): PaginatedFullGameResponse
 
     // https://github.com/speedruncomorg/api/blob/master/version1/games.md
     @GET("games")
@@ -61,9 +61,14 @@ interface SRCService {
                     MoshiConverterFactory.create(
                         Moshi.Builder()
                             .add(Date::class.java, Rfc3339DateJsonAdapter())
+                            .add(TimingMethodAdapter())
+                            .add(PlayerCountTypeAdapter())
+                            .add(VariableScopeAdapter())
+                            .add(CategoryTypeAdapter())
+                            .add(ValuesAdapter())
                             .add(StatusAdapter())
                             .add(RoleAdapter())
-                            .add(VariablesAdapter())
+                            .add(VariablesAndValuesAdapter())
                             .add(
                                 PolymorphicJsonAdapterFactory.of(PlayerResponse::class.java, "rel")
                                     .withSubtype(UserResponse::class.java, PlayerType.User.apiString)

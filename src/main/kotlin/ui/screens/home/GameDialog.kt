@@ -2,7 +2,6 @@ package ui.screens.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,35 +14,116 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import persistence.database.Game
+import ui.theme.approveGreen
+import ui.theme.rejectRed
 
 @Composable
-fun SettingsComponent() {
+fun GameDialog(
+    onDismiss: () -> Unit
+) {
     val scope = rememberCoroutineScope()
-    val viewModel = remember { GameSelectorViewModel(scope) }
+    val viewModel = remember { GameViewModel(scope) }
 
-    SettingsComponentContent(
+    GameDialogContent(
         uiState = viewModel.gamesSelectorUIState.collectAsState(),
-        selectedGame = viewModel.selectedGame.collectAsState(),
+        selectedGame = viewModel.selectedGame,
         onQueryChanged = viewModel::onQueryChanged,
         onGameSelected = viewModel::onGameSelected,
         onSearchStarted = viewModel::onSearchStarted,
-        onSearchStopped = viewModel::onSearchStopped
+        onSearchStopped = viewModel::onSearchStopped,
+        onSave = {
+            viewModel.onSave()
+            onDismiss()
+        },
+        onDismiss = onDismiss
     )
 }
 
 @Composable
-fun SettingsComponentContent(
+private fun GameDialogContent(
     uiState: State<GamesSelectorUIState>,
     selectedGame: State<Game?>,
     onQueryChanged: (newQuery: String) -> Unit,
     onGameSelected: (newGame: Game) -> Unit,
     onSearchStarted: () -> Unit,
-    onSearchStopped: () -> Unit
+    onSearchStopped: () -> Unit,
+    onSave: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            title = "SRC Client",
+            resizable = false,
+            undecorated = true,
+            size = IntSize(380, 400)
+        )
+    ) {
+        Surface(
+            modifier = Modifier.size(380.dp, 400.dp),
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colors.surface,
+            border = BorderStroke(width = 1.dp, color = MaterialTheme.colors.primary)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                GameSelector(
+                    uiState = uiState,
+                    selectedGame = selectedGame,
+                    onQueryChanged = onQueryChanged,
+                    onGameSelected = onGameSelected,
+                    onSearchStarted = onSearchStarted,
+                    onSearchStopped = onSearchStopped,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = MaterialTheme.colors.rejectRed,
+                            contentColor = MaterialTheme.colors.onPrimary
+                        )
+                    ) {
+                        Text("Cancel")
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    TextButton(
+                        onClick = onSave,
+                        enabled = selectedGame.value != null,
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = MaterialTheme.colors.approveGreen,
+                            contentColor = MaterialTheme.colors.onPrimary
+                        )
+                    ) {
+                        Text("Save")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun GameSelector(
+    uiState: State<GamesSelectorUIState>,
+    selectedGame: State<Game?>,
+    onQueryChanged: (newQuery: String) -> Unit,
+    onGameSelected: (newGame: Game) -> Unit,
+    onSearchStarted: () -> Unit,
+    onSearchStopped: () -> Unit,
+    modifier: Modifier,
 ) {
     val (searchFieldIsFocused, setSearchFieldIsFocused) = remember { mutableStateOf(false) }
     if (searchFieldIsFocused && uiState.value is GamesSelectorUIState.NotSearching) {
@@ -53,9 +133,9 @@ fun SettingsComponentContent(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
     ) {
-        Spacer(Modifier.height(20.dp))
         GameSelectorSearchField(
             uiState,
             selectedGame,
@@ -77,6 +157,7 @@ fun GameSelectorSearchField(
     onSearchStopped: () -> Unit,
     setSearchFieldIsFocused: (Boolean) -> Unit
 ) {
+    // TODO make this wider
     OutlinedTextField(
         value = if (uiState.value is GamesSelectorUIState.NotSearching) {
             selectedGame.value?.name ?: ""
@@ -113,8 +194,7 @@ fun GameSelectorDropdown(
         LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .heightIn(0.dp, TextFieldDefaults.MinHeight * 3)
-                .border(BorderStroke(2.dp, Color.Black))
+                .fillMaxHeight()
                 .width(TextFieldDefaults.MinWidth)
         ) {
             when (val state = uiState.value) {
@@ -127,7 +207,6 @@ fun GameSelectorDropdown(
                 is GamesSelectorUIState.LoadedQuery -> {
                     items(state.games) { game ->
                         GameSelectorItem(game, onGameSelected)
-                        Divider(modifier = Modifier.padding(horizontal = 10.dp))
                     }
                 }
             }
@@ -144,7 +223,7 @@ fun GameSelectorItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onGameSelected(game) }
-            .padding(vertical = 10.dp)
+            .padding(vertical = 10.dp, horizontal = 5.dp)
     ) {
         Text(
             text = game.name,

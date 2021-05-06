@@ -1,31 +1,92 @@
 package data
 
 import data.local.*
-import data.local.entities.Guest
-import data.local.entities.RegisteredUser
-import data.local.entities.Run
+import data.local.entities.*
 import data.remote.responses.*
 import persistence.database.Game
 
-fun BulkGameResponse.toGame() = Game(GameId(id), abbreviation, names.international)
+fun GameResponse.toGame() = Game(GameId(id), abbreviation, names.international)
 
+// assets, links and levels not mapped for now
+fun FullGameResponse.toFullGame() = FullGame(
+    gameId = GameId(id),
+    name = names.international,
+    abbreviation = abbreviation,
+    releaseDate = releaseDate,
+    additionDate = additionDate,
+    showMilliseconds = ruleset.showMilliseconds,
+    requireVerification = ruleset.requireVerification,
+    requireVideo = ruleset.requireVideo,
+    emulatorsAllowed = ruleset.emulatorsAllowed,
+    timingMethods = ruleset.runTimes,
+    defaultTimingMethod = ruleset.defaultTimingMethod,
+    isROMHack = isROMHack,
+    gameTypeIds = gameTypeIds.map(::GameTypeId),
+    platformIds = platformIds.map(::PlatformId),
+    regionIds = regionIds.map(::RegionId),
+    genreIds = genreIds.map(::GenreId),
+    engineIds = engineIds.map(::EngineId),
+    developerIds = developerIds.map(::DeveloperId),
+    publisherIds = publisherIds.map(::PublisherId),
+    moderators = moderators.values.map(PlayerResponse::toUser),
+    categories = categories.values.map(CategoryResponse::toCategory),
+    weblink = weblink
+)
+
+// links not mapped for now
+fun CategoryResponse.toCategory() = Category(
+    categoryId = CategoryId(id),
+    name = name,
+    type = type,
+    rules = rules,
+    playerCountType = playerCount.type,
+    playerCount = playerCount.value,
+    isMiscellaneous = isMiscellaneous,
+    variables = variables.values.map(VariableResponse::toVariable),
+    weblink = weblink
+)
+
+// links not mapped for now, level scope not mapped for now
+fun VariableResponse.toVariable() = Variable(
+    variableId = VariableId(id),
+    name = name,
+    categoryId = categoryId?.let(::CategoryId),
+    scope = scope.value,
+    isMandatory = mandatory,
+    isUserDefined = userDefined,
+    isSubCategory = isSubCategory,
+    obsoletes = obsoletes,
+    values = valueResponses.valueResponses.map(ValueResponse::toValue),
+    defaultValueId = valueResponses.defaultValueId?.let(::ValueId)
+)
+
+fun ValueResponse.toValue() = Value(
+    valueId = ValueId(id),
+    label = label,
+    rules = rules,
+    miscellaneousFlag = miscellaneousFlag
+)
+
+// system not mapped for now
 fun RunResponse.toRun() = Run(
     runId = RunId(id),
     gameId = GameId(gameId),
     categoryId = CategoryId(categoryId),
-    levelId = if (levelId != null) LevelId(levelId) else null,
-    variables = variables.values,
+    levelId = levelId?.let(::LevelId),
+    variablesAndValues = variablesAndValues.variablesAndValues.map {
+        VariableAndValue(VariableId(it.variableId), ValueId(it.valueId))
+    },
     status = status.value,
-    verifierId = if (status.verifierId != null) UserId(status.verifierId) else null,
+    verifierId = status.verifierId?.let(::UserId),
     verificationDate = status.verificationDate,
     players = players.players.map(PlayerResponse::toUser),
     comment = comment,
     runDate = runDate,
     submissionDate = submissionDate,
     timePrimary = times.primaryT,
-    timeReal = times.realtimeT,
-    timeRealNoLoads = times.realtimeNoloadsT,
-    timeIngame = times.ingameT,
+    timeReal = times.realTimeT,
+    timeRealNoLoads = times.realTimeNoLoadsT,
+    timeIngame = times.inGameT,
     videoText = videos?.text,
     videoLinks = videos?.links?.map { it.uri } ?: emptyList(),
     weblink = weblink

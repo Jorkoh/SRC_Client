@@ -29,3 +29,7 @@ inline fun <T : Any> JsonReader.readObjectToList(body: () -> T?): List<T> {
     endObject()
     return result
 }
+
+fun JsonReader.nextStringOrNull() = if (peek() == JsonReader.Token.STRING) nextString() else nextNull()
+
+fun JsonReader.nextBooleanOrNull() = if (peek() == JsonReader.Token.BOOLEAN) nextBoolean() else nextNull()

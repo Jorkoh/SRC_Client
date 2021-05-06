@@ -10,7 +10,7 @@ class HttpRequestInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
         val request = originalRequest.newBuilder().url(originalRequest.url()).build()
-        logger.debug { "$request" }
+        logger.debug { "REQUEST: ${request.url()}" }
         return chain.proceed(request)
     }
 }

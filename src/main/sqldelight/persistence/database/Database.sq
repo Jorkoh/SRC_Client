@@ -1,7 +1,7 @@
 import data.local.GameId;
 import data.local.SettingsId;
 
-CREATE TABLE settings (
+CREATE TABLE filters (
     id INTEGER AS SettingsId PRIMARY KEY,
     selectedGameId TEXT AS GameId,
     FOREIGN KEY(selectedGameId) REFERENCES game(id)
@@ -13,20 +13,20 @@ CREATE TABLE game (
     name TEXT NOT NULL
 );
 
-INSERT INTO settings (id, selectedGameId)
-VALUES (1, NULL);
+INSERT INTO filters (id, selectedGameId)
+VALUES (1, "j1npme6p");
 
 getSelectedGame:
 SELECT *
 FROM game
 WHERE id
 IN (SELECT selectedGameId
-    FROM settings
+    FROM filters
     LIMIT 1)
 LIMIT 1;
 
 updateSelectedGameId:
-INSERT OR REPLACE INTO settings (id, selectedGameId)
+INSERT OR REPLACE INTO filters (id, selectedGameId)
 VALUES (1, ?);
 
 getGameCount:
@@ -40,7 +40,8 @@ FROM game;
 getAllGamesFiltered:
 SELECT *
 FROM game
-WHERE name LIKE '%'||?||'%';
+WHERE name LIKE '%'||:nameMatch||'%'
+LIMIT :limit;
 
 insertGame:
 INSERT OR REPLACE INTO game (id, abbreviation, name)

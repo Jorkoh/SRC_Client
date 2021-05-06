@@ -1,7 +1,7 @@
 package ui.screens.home
 
 import data.SRCRepository
-import data.local.SettingsDAO
+import data.local.FiltersDAO
 import data.local.entities.Run
 import data.local.entities.Status
 import kotlinx.coroutines.CoroutineScope
@@ -16,7 +16,7 @@ import persistence.database.Game
 
 class RunsViewModel(private val scope: CoroutineScope) : KoinComponent {
 
-    private val settings by inject<SettingsDAO>()
+    private val settings by inject<FiltersDAO>()
     private val srcRepository by inject<SRCRepository>()
 
     init {
@@ -28,10 +28,10 @@ class RunsViewModel(private val scope: CoroutineScope) : KoinComponent {
         }
     }
 
-    private var runsQueryJob: Job? = null
-
     private val _runsUIState = MutableStateFlow<RunsUIState>(RunsUIState.Loaded())
     val runsUIState: StateFlow<RunsUIState> = _runsUIState
+
+    private var runsQueryJob: Job? = null
 
     private fun refreshRuns(selectedGame: Game?) {
         runsQueryJob?.cancel()

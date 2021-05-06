@@ -24,7 +24,7 @@ class SRCRepository(
                 val games = mutableListOf<Game>()
                 do {
                     val response = srcService.fetchGames(offset = games.size).apply {
-                        games.addAll(bulkGameResponses.map { it.toGame() })
+                        games.addAll(gameResponses.map { it.toGame() })
                     }
                     emit("Downloaded ${games.size} games...")
                 } while (response.pagination.size == response.pagination.max)
@@ -32,6 +32,14 @@ class SRCRepository(
                 gamesDAO.insertGames(games)
             }
         }.flowOn(Dispatchers.IO)
+
+    fun getFullGame(gameId: GameId) =
+        flow {
+            val fullGame = srcService.fetchFullGame(
+                gameId = gameId.value
+            ).fullGameResponse.toFullGame()
+            emit(fullGame)
+        }
 
     fun getRuns(
         gameId: GameId,
