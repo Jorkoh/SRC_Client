@@ -1,33 +1,45 @@
+import data.local.FiltersId;
 import data.local.GameId;
-import data.local.SettingsId;
+import data.local.entities.RunStatus;
 
 CREATE TABLE filters (
-    id INTEGER AS SettingsId PRIMARY KEY,
-    selectedGameId TEXT AS GameId,
-    FOREIGN KEY(selectedGameId) REFERENCES game(id)
+    id INTEGER AS FiltersId PRIMARY KEY,
+    runStatus TEXT AS RunStatus NOT NULL
 );
 
 CREATE TABLE game (
     id TEXT AS GameId PRIMARY KEY,
     abbreviation TEXT NOT NULL,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    isSelected INTEGER AS Boolean NOT NULL DEFAULT 0
 );
 
-INSERT INTO filters (id, selectedGameId)
-VALUES (1, "j1npme6p");
+INSERT INTO filters (id, runStatus)
+VALUES (1, "Pending");
 
 getSelectedGame:
 SELECT *
 FROM game
-WHERE id
-IN (SELECT selectedGameId
-    FROM filters
-    LIMIT 1)
+WHERE isSelected = 1;
+
+updateSelectedGameId {
+    UPDATE game
+    SET isSelected = 0
+    WHERE isSelected = 1;
+
+    UPDATE game
+    SET isSelected = 1
+    WHERE id = ?;
+}
+
+getFilters:
+SELECT *
+FROM filters
 LIMIT 1;
 
-updateSelectedGameId:
-INSERT OR REPLACE INTO filters (id, selectedGameId)
-VALUES (1, ?);
+updateFilters:
+INSERT OR REPLACE INTO filters (id, runStatus)
+VALUES ?;
 
 getGameCount:
 SELECT COUNT(*)

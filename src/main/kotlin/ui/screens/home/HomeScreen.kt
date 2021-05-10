@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.res.vectorXmlResource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import persistence.database.Filters
 import ui.theme.offWhite
 
 @Composable
@@ -18,9 +19,10 @@ fun HomeScreen() {
     HomeScreenContent(
         uiState = viewModel.homeUIState.collectAsState(),
         scope = scope,
-        onChangeGameButtonClicked = viewModel::onChangeGameButtonClicked,
-        onChangeGameDialogDismissed = viewModel::onChangeGameDialogDismissed,
-        onRefreshButtonClicked = viewModel::refreshRuns
+        onChangeGameButtonClicked = { viewModel.setGameSelectorIsOpen(true) },
+        onChangeGameDialogDismissed = { viewModel.setGameSelectorIsOpen(false) },
+        onRefreshButtonClicked = viewModel::refreshRuns,
+        onApplyFiltersClicked = viewModel::applyFilters
     )
 }
 
@@ -30,7 +32,8 @@ private fun HomeScreenContent(
     scope: CoroutineScope,
     onChangeGameButtonClicked: () -> Unit,
     onChangeGameDialogDismissed: () -> Unit,
-    onRefreshButtonClicked: () -> Unit
+    onRefreshButtonClicked: () -> Unit,
+    onApplyFiltersClicked: (Filters) -> Unit
 ) {
     val scaffoldState = rememberBackdropScaffoldState(BackdropValue.Concealed)
 
@@ -52,8 +55,16 @@ private fun HomeScreenContent(
                 },
             )
         },
-        frontLayerContent = { RunsComponent(uiState.value.runsUIState) },
-        backLayerContent = { FiltersComponent(uiState.value.filtersUIState) },
+        frontLayerContent = { RunsSection(uiState.value.runsUIState) },
+        backLayerContent = {
+            FiltersSection(
+                filtersUIState = uiState.value.filtersUIState,
+                onApplyFiltersClicked = {
+                    onApplyFiltersClicked(it)
+                    scope.launch { scaffoldState.conceal() }
+                }
+            )
+        },
         backLayerBackgroundColor = MaterialTheme.colors.offWhite,
         frontLayerShape = MaterialTheme.shapes.large
     )
@@ -70,8 +81,9 @@ private fun HomeTopAppBar(
         title = { Text(gameTitle) },
         navigationIcon = { GameDialogButton(onChangeGameButtonClicked) },
         actions = {
-        RefreshButton(onRefreshButtonClicked)
-            FiltersButton(onFiltersButtonClicked) }
+            RefreshButton(onRefreshButtonClicked)
+            FiltersButton(onFiltersButtonClicked)
+        }
     )
 }
 

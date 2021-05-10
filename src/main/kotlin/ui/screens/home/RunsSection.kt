@@ -17,7 +17,7 @@ import kotlin.math.roundToInt
 import kotlin.time.Duration
 
 @Composable
-fun RunsComponent(uiState: HomeUIState.RunsUIState) {
+fun RunsSection(uiState: HomeUIState.RunsUIState) {
     LazyColumn(modifier = Modifier.fillMaxWidth()) {
         when (uiState) {
             is FailedToLoadRuns -> item {

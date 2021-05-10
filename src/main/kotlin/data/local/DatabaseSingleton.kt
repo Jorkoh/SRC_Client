@@ -1,12 +1,18 @@
 package data.local
 
 import com.squareup.sqldelight.ColumnAdapter
+import com.squareup.sqldelight.EnumColumnAdapter
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import persistence.database.DatabaseInstance
 import persistence.database.Filters
 import persistence.database.Game
 
-inline class SettingsId(val value: Long)
+inline class FiltersId(val value: Long){
+    companion object{
+        // can't override invoke and private constructor because sqldelight fails generation :(
+        val Default = FiltersId(1)
+    }
+}
 inline class GameId(val value: String)
 inline class CategoryId(val value: String)
 inline class VariableId(val value: String)
@@ -37,14 +43,14 @@ class DatabaseSingleton {
             override fun decode(databaseValue: String) = GameId(databaseValue)
             override fun encode(value: GameId) = value.value
         }
-        val settingsIdAdapter = object : ColumnAdapter<SettingsId, Long> {
-            override fun decode(databaseValue: Long) = SettingsId(databaseValue)
-            override fun encode(value: SettingsId) = value.value
+        val filtersIdAdapter = object : ColumnAdapter<FiltersId, Long> {
+            override fun decode(databaseValue: Long) = FiltersId.Default
+            override fun encode(value: FiltersId) = value.value
         }
         db = DatabaseInstance(
             driver = driver,
             gameAdapter = Game.Adapter(gameIdAdapter),
-            filtersAdapter = Filters.Adapter(settingsIdAdapter, gameIdAdapter)
+            filtersAdapter = Filters.Adapter(filtersIdAdapter, EnumColumnAdapter())
         )
     }
 

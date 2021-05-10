@@ -49,7 +49,7 @@ fun GameDialog(
 @Composable
 private fun GameDialogContent(
     uiState: State<GameSelectorUIState>,
-    selectedGame: State<Game?>,
+    selectedGame: State<Game>,
     onQueryChanged: (newQuery: String) -> Unit,
     onGameSelected: (newGame: Game) -> Unit,
     onSearchStarted: () -> Unit,
@@ -131,7 +131,7 @@ private fun GameDialogButtons(
 @Composable
 fun GameSelector(
     uiState: State<GameSelectorUIState>,
-    selectedGame: State<Game?>,
+    selectedGame: State<Game>,
     onQueryChanged: (newQuery: String) -> Unit,
     onGameSelected: (newGame: Game) -> Unit,
     onSearchStarted: () -> Unit,
@@ -164,7 +164,7 @@ fun GameSelector(
 @Composable
 fun GameSelectorSearchField(
     uiState: State<GameSelectorUIState>,
-    selectedGame: State<Game?>,
+    selectedGame: State<Game>,
     onQueryChanged: (newQuery: String) -> Unit,
     onSearchStarted: () -> Unit,
     onSearchStopped: () -> Unit,
@@ -172,7 +172,8 @@ fun GameSelectorSearchField(
 ) {
     OutlinedTextField(
         value = if (uiState.value is GameSelectorUIState.NotSearching) {
-            selectedGame.value?.name ?: ""
+//            selectedGame.value?.name ?: ""
+            selectedGame.value.name
         } else {
             uiState.value.query
         },
@@ -188,12 +189,12 @@ fun GameSelectorSearchField(
             }
             setSearchFieldIsFocused(newFocusState == FocusState.Active)
         }.fillMaxWidth(),
-        isError = uiState.value is GameSelectorUIState.NotSearching && selectedGame.value == null,
-        trailingIcon = {
-            if (uiState.value is GameSelectorUIState.NotSearching && selectedGame.value == null) {
-                Icon(Icons.Default.Warning, null)
-            }
-        }
+//        isError = uiState.value is GameSelectorUIState.NotSearching && selectedGame.value == null,
+//        trailingIcon = {
+//            if (uiState.value is GameSelectorUIState.NotSearching && selectedGame.value == null) {
+//                Icon(Icons.Default.Warning, null)
+//            }
+//        }
     )
 }
 

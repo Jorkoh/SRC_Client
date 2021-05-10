@@ -1,13 +1,18 @@
 package data.local.entities
 
 import data.local.*
+import ui.screens.home.Displayable
 import java.util.*
 import kotlin.time.Duration
 
-enum class Status(val apiString: String) {
-    Pending("new"),
-    Approved("verified"),
-    Rejected("rejected")
+enum class RunStatus(val apiString: String, override val uiString: String) : Displayable {
+    Pending("new", "Pending"),
+    Approved("verified", "Approved"),
+    Rejected("rejected", "Rejected");
+
+    companion object{
+        val Default = Pending
+    }
 }
 
 data class Run(
@@ -18,7 +23,7 @@ data class Run(
     val levelId: LevelId?,
     val variablesAndValues: List<VariableAndValue>,
 
-    val status: Status,
+    val runStatus: RunStatus,
     val verifierId: UserId?,
     val verificationDate: Date?,
 

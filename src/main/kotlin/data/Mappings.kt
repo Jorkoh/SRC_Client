@@ -4,12 +4,10 @@ import data.local.*
 import data.local.entities.*
 import data.remote.responses.*
 import persistence.database.Game
-import java.sql.Time
-import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-fun GameResponse.toGame() = Game(GameId(id), abbreviation, names.international)
+fun GameResponse.toGame() = Game(GameId(id), abbreviation, names.international, false)
 
 // assets, links and levels not mapped for now
 fun FullGameResponse.toFullGame() = FullGame(
@@ -80,7 +78,7 @@ fun RunResponse.toRun() = Run(
     variablesAndValues = variablesAndValues.variablesAndValues.map {
         VariableAndValue(VariableId(it.variableId), ValueId(it.valueId))
     },
-    status = status.value,
+    runStatus = status. value,
     verifierId = status.verifierId?.let(::UserId),
     verificationDate = status.verificationDate,
     players = players.players.map(PlayerResponse::toUser),

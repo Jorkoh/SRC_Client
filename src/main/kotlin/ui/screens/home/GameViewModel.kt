@@ -4,6 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import data.SRCRepository
 import data.local.FiltersDAO
+import data.local.GamesDAO
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,13 +17,13 @@ import persistence.database.Game
 
 class GameViewModel(private val scope: CoroutineScope) : KoinComponent {
 
-    private val filters by inject<FiltersDAO>()
+    private val games by inject<GamesDAO>()
     private val srcRepository by inject<SRCRepository>()
 
     private val _gamesQueryUIState = MutableStateFlow<GameSelectorUIState>(GameSelectorUIState.NotSearching())
     val gameSelectorUIState: StateFlow<GameSelectorUIState> = _gamesQueryUIState
 
-    var selectedGame: MutableState<Game?> = mutableStateOf(filters.getSelectedGameBlocking())
+    var selectedGame: MutableState<Game> = mutableStateOf(games.getSelectedGameBlocking())
 
     private var queriedGamesJob: Job? = null
 
@@ -41,7 +42,6 @@ class GameViewModel(private val scope: CoroutineScope) : KoinComponent {
 
     fun onSearchStarted() {
         _gamesQueryUIState.value = GameSelectorUIState.LoadedQuery(EMPTY_QUERY)
-        selectedGame.value = null
     }
 
     fun onSearchStopped() {
@@ -56,9 +56,7 @@ class GameViewModel(private val scope: CoroutineScope) : KoinComponent {
 
     fun onSave() {
         scope.launch {
-            selectedGame.value?.let { newSelectedGame ->
-                filters.setSelectedGameIfChanged(newSelectedGame)
-            }
+            games.setSelectedGameIfChanged(selectedGame.value)
         }
     }
 

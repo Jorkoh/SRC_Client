@@ -2,9 +2,11 @@ package ui.screens.home
 
 import data.SRCRepository
 import data.local.FiltersDAO
+import data.local.FiltersId
+import data.local.GamesDAO
 import data.local.entities.FullGame
 import data.local.entities.Run
-import data.local.entities.Status
+import data.local.entities.RunStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,24 +16,31 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import persistence.database.Filters
 import persistence.database.Game
 
 class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
 
     private val filters by inject<FiltersDAO>()
+    private val games by inject<GamesDAO>()
     private val srcRepository by inject<SRCRepository>()
 
     init {
         scope.launch {
-            filters.getSelectedGame().collect { newSelectedGame ->
+            games.getSelectedGame().collect { newSelectedGame ->
                 onSelectedGameChanged(newSelectedGame)
             }
+        }
+        scope.launch {
+            // Filters state isn't isn't tied to db, it's held in FiltersSection
+            val filters = filters.getFilters().first()
+            setFiltersUIState(HomeUIState.FiltersUIState(filters))
         }
     }
 
     private val _homeUIState = MutableStateFlow<HomeUIState>(
         HomeUIState.LoadingGame(
-            HomeUIState.FiltersUIState.PlaceHolder,
+            HomeUIState.FiltersUIState(),
             HomeUIState.RunsUIState.LoadedRuns()
         )
     )
@@ -45,7 +54,7 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
     private fun onSelectedGameChanged(newSelectedGame: Game) {
         fullGameJob?.cancel()
         _homeUIState.value = HomeUIState.LoadingGame(
-            filtersUIState = HomeUIState.FiltersUIState.PlaceHolder,
+            filtersUIState = _homeUIState.value.filtersUIState,
             runsUIState = HomeUIState.RunsUIState.LoadedRuns(),
             gameSelectorIsOpen = _homeUIState.value.gameSelectorIsOpen
         )
@@ -54,19 +63,11 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
             refreshRuns()
             _homeUIState.value = HomeUIState.Ready(
                 game = fullGame,
-                filtersUIState = HomeUIState.FiltersUIState.PlaceHolder,
+                filtersUIState = _homeUIState.value.filtersUIState,
                 runsUIState = HomeUIState.RunsUIState.LoadingRuns,
                 gameSelectorIsOpen = _homeUIState.value.gameSelectorIsOpen
             )
         }
-    }
-
-    fun onChangeGameButtonClicked() {
-        setGameSelectorIsOpen(true)
-    }
-
-    fun onChangeGameDialogDismissed() {
-        setGameSelectorIsOpen(false)
     }
 
     fun refreshRuns() {
@@ -74,24 +75,36 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
         runsQueryJob?.cancel()
         setRunsUIState(HomeUIState.RunsUIState.LoadingRuns)
         runsQueryJob = scope.launch {
-            srcRepository.getRuns(fullGame.gameId, Status.Pending).collect { runs ->
+            srcRepository.getRuns(
+                gameId = fullGame.gameId,
+                runStatus = homeUIState.value.filtersUIState.value.runStatus
+            ).collect { runs ->
                 setRunsUIState(HomeUIState.RunsUIState.LoadedRuns(runs))
             }
         }
     }
 
-    private fun setGameSelectorIsOpen(isOpen: Boolean) {
+    fun applyFilters(newFilters: Filters) {
+        filters.setFilters(newFilters)
+        // Filters state isn't isn't tied to db, it's held in FiltersSection
+        setFiltersUIState(HomeUIState.FiltersUIState(newFilters))
+        refreshRuns()
+    }
+
+    /* UTILS STUFF TO MANAGE STATE CLASS */
+
+    private fun setFiltersUIState(filtersUIState: HomeUIState.FiltersUIState) {
         _homeUIState.value = when (val previous = _homeUIState.value) {
             is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(
-                filtersUIState = previous.filtersUIState,
+                filtersUIState = filtersUIState,
                 runsUIState = previous.runsUIState,
-                gameSelectorIsOpen = isOpen
+                gameSelectorIsOpen = previous.gameSelectorIsOpen
             )
             is HomeUIState.Ready -> HomeUIState.Ready(
-                filtersUIState = previous.filtersUIState,
-                runsUIState = previous.runsUIState,
                 game = previous.game,
-                gameSelectorIsOpen = isOpen
+                filtersUIState = filtersUIState,
+                runsUIState = previous.runsUIState,
+                gameSelectorIsOpen = previous.gameSelectorIsOpen
             )
         }
     }
@@ -108,6 +121,22 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
                 filtersUIState = previous.filtersUIState,
                 runsUIState = runsUIState,
                 gameSelectorIsOpen = previous.gameSelectorIsOpen
+            )
+        }
+    }
+
+    fun setGameSelectorIsOpen(isOpen: Boolean) {
+        _homeUIState.value = when (val previous = _homeUIState.value) {
+            is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(
+                filtersUIState = previous.filtersUIState,
+                runsUIState = previous.runsUIState,
+                gameSelectorIsOpen = isOpen
+            )
+            is HomeUIState.Ready -> HomeUIState.Ready(
+                filtersUIState = previous.filtersUIState,
+                runsUIState = previous.runsUIState,
+                game = previous.game,
+                gameSelectorIsOpen = isOpen
             )
         }
     }
@@ -132,9 +161,9 @@ sealed class HomeUIState(
         gameSelectorIsOpen: Boolean = false
     ) : HomeUIState(filtersUIState, runsUIState, gameSelectorIsOpen)
 
-    sealed class FiltersUIState {
-        object PlaceHolder : FiltersUIState()
-    }
+    data class FiltersUIState(
+        val value: Filters = Filters(FiltersId.Default, RunStatus.Default)
+    )
 
     sealed class RunsUIState {
         object LoadingRuns : RunsUIState()

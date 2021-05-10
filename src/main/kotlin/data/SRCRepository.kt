@@ -3,7 +3,7 @@ package data
 import data.local.GameId
 import data.local.GamesDAO
 import data.local.entities.Run
-import data.local.entities.Status
+import data.local.entities.RunStatus
 import data.remote.SRCService
 import data.remote.utils.RunSortParameters
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +29,7 @@ class SRCRepository(
                     emit("Downloaded ${games.size} games...")
                 } while (response.pagination.size == response.pagination.max)
                 emit("Storing ${games.size} games...")
+                // TODO whenever the force update for game list is added previous value should stay selected
                 gamesDAO.insertGames(games)
             }
         }.flowOn(Dispatchers.IO)
@@ -43,14 +44,14 @@ class SRCRepository(
 
     fun getRuns(
         gameId: GameId,
-        status: Status,
+        runStatus: RunStatus,
         sortingParams: RunSortParameters? = null
     ) = flow {
         val runs = mutableListOf<Run>()
         do {
             val response = srcService.fetchRuns(
                 gameId = gameId.value,
-                status = status.apiString,
+                status = runStatus.apiString,
                 orderBy = sortingParams?.discriminator?.apiString,
                 direction = sortingParams?.direction?.apiString,
                 offset = runs.size
