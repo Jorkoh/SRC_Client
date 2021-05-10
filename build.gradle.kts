@@ -16,7 +16,7 @@ buildscript {
 
 plugins {
     kotlin("jvm") version "1.4.32"
-    id("org.jetbrains.compose") version "0.4.0-build184"
+    id("org.jetbrains.compose") version "0.4.0-build188"
     id("org.jetbrains.kotlin.kapt") version "1.4.32"
     id("com.squareup.sqldelight") version "1.5.0"
 }
@@ -60,6 +60,7 @@ tasks.withType<KotlinCompile>() {
     kotlinOptions.freeCompilerArgs += "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=androidx.compose.material.ExperimentalMaterialApi"
+    kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.time.ExperimentalTime"
     kotlinOptions.freeCompilerArgs += "-Xinline-classes"
 }
 

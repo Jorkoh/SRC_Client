@@ -2,6 +2,7 @@ package data.local.entities
 
 import data.local.*
 import java.util.*
+import kotlin.time.Duration
 
 enum class Status(val apiString: String) {
     Pending("new"),
@@ -26,10 +27,10 @@ data class Run(
     val comment: String?,
     val runDate: Date,
     val submissionDate: Date?,
-    val timePrimary: Double,
-    val timeReal: Double?,
-    val timeRealNoLoads: Double?,
-    val timeIngame: Double?,
+    val primaryTime: Duration,
+    val realTime: Duration?,
+    val realTimeNoLoads: Duration?,
+    val inGameTime: Duration?,
     val videoText: String?,
     val videoLinks: List<String>,
 

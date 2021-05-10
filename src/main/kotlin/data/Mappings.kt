@@ -4,6 +4,10 @@ import data.local.*
 import data.local.entities.*
 import data.remote.responses.*
 import persistence.database.Game
+import java.sql.Time
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 fun GameResponse.toGame() = Game(GameId(id), abbreviation, names.international)
 
@@ -83,10 +87,10 @@ fun RunResponse.toRun() = Run(
     comment = comment,
     runDate = runDate,
     submissionDate = submissionDate,
-    timePrimary = times.primaryT,
-    timeReal = times.realTimeT,
-    timeRealNoLoads = times.realTimeNoLoadsT,
-    timeIngame = times.inGameT,
+    primaryTime = times.primarySeconds.toDuration(DurationUnit.SECONDS),
+    realTime = times.realTimeSeconds?.toDuration(DurationUnit.SECONDS),
+    realTimeNoLoads = times.realTimeNoLoadsSeconds?.toDuration(DurationUnit.SECONDS),
+    inGameTime = times.inGameSeconds?.toDuration(DurationUnit.SECONDS),
     videoText = videos?.text,
     videoLinks = videos?.links?.map { it.uri } ?: emptyList(),
     weblink = weblink
