@@ -1,6 +1,7 @@
 package data.local.entities
 
 import data.local.CategoryId
+import ui.screens.home.Displayable
 
 enum class PlayerCountType(val apiString: String) {
     Exactly("exactly"),
@@ -24,4 +25,7 @@ data class Category(
     val variables: List<Variable>,
 
     val weblink: String
-)
+) : Displayable {
+    override val uiString: String
+        get() = name
+}

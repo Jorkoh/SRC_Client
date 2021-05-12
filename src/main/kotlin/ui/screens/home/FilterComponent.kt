@@ -14,30 +14,32 @@ import androidx.compose.ui.res.vectorXmlResource
 @Composable
 fun <T : Displayable> FilterComponent(
     title: String,
-    selectedOption: T,
+    selectedOption: T?,
     options: List<T>,
-    onOptionSelected: (T) -> Unit
+    onOptionSelected: (T?) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+
+    val optionsWithAny = listOf(null).plus(options)
 
     Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable { expanded = true }
         ) {
-            Text(text = "$title: ${selectedOption.uiString}", style = MaterialTheme.typography.subtitle1)
+            Text(text = "$title: ${selectedOption?.uiString ?: "All"}", style = MaterialTheme.typography.subtitle1)
             Icon(imageVector = vectorXmlResource("ic_expand.xml"), contentDescription = null)
         }
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            for (option in options) {
+            for (option in optionsWithAny) {
                 DropdownMenuItem(onClick = {
                     expanded = false
                     onOptionSelected(option)
                 }) {
-                    Text(option.uiString)
+                    Text(option?.uiString ?: "All")
                 }
             }
         }

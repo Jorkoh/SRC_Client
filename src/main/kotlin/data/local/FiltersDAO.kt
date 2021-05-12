@@ -16,4 +16,8 @@ class FiltersDAO(databaseSingleton: DatabaseSingleton) {
     fun setFilters(newFilters: Filters) {
         queries.updateFilters(newFilters)
     }
+
+    fun resetFilters() {
+        queries.resetFilters()
+    }
 }

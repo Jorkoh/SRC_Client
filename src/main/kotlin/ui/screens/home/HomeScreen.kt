@@ -22,7 +22,7 @@ fun HomeScreen() {
         onChangeGameButtonClicked = { viewModel.setGameSelectorIsOpen(true) },
         onChangeGameDialogDismissed = { viewModel.setGameSelectorIsOpen(false) },
         onRefreshButtonClicked = viewModel::refreshRuns,
-        onApplyFiltersClicked = viewModel::applyFilters
+        onFiltersChanged = viewModel::changeFilters
     )
 }
 
@@ -33,7 +33,7 @@ private fun HomeScreenContent(
     onChangeGameButtonClicked: () -> Unit,
     onChangeGameDialogDismissed: () -> Unit,
     onRefreshButtonClicked: () -> Unit,
-    onApplyFiltersClicked: (Filters) -> Unit
+    onFiltersChanged: (Filters) -> Unit,
 ) {
     val scaffoldState = rememberBackdropScaffoldState(BackdropValue.Concealed)
 
@@ -47,7 +47,10 @@ private fun HomeScreenContent(
             HomeTopAppBar(
                 gameTitle = (uiState.value as? HomeUIState.Ready)?.game?.name ?: "...",
                 onChangeGameButtonClicked = onChangeGameButtonClicked,
-                onRefreshButtonClicked = onRefreshButtonClicked,
+                onRefreshButtonClicked = {
+                    onRefreshButtonClicked()
+                    scope.launch { scaffoldState.conceal() }
+                },
                 onFiltersButtonClicked = {
                     scope.launch {
                         with(scaffoldState) { if (isConcealed) reveal() else conceal() }
@@ -59,10 +62,7 @@ private fun HomeScreenContent(
         backLayerContent = {
             FiltersSection(
                 filtersUIState = uiState.value.filtersUIState,
-                onApplyFiltersClicked = {
-                    onApplyFiltersClicked(it)
-                    scope.launch { scaffoldState.conceal() }
-                }
+                onFiltersChanged = onFiltersChanged
             )
         },
         backLayerBackgroundColor = MaterialTheme.colors.offWhite,

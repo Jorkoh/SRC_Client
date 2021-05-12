@@ -1,5 +1,6 @@
 package data
 
+import data.local.CategoryId
 import data.local.GameId
 import data.local.GamesDAO
 import data.local.entities.Run
@@ -44,14 +45,16 @@ class SRCRepository(
 
     fun getRuns(
         gameId: GameId,
-        runStatus: RunStatus,
+        runStatus: RunStatus?,
+        categoryId: CategoryId?,
         sortingParams: RunSortParameters? = null
     ) = flow {
         val runs = mutableListOf<Run>()
         do {
             val response = srcService.fetchRuns(
                 gameId = gameId.value,
-                status = runStatus.apiString,
+                categoryId = categoryId?.value,
+                status = runStatus?.apiString,
                 orderBy = sortingParams?.discriminator?.apiString,
                 direction = sortingParams?.direction?.apiString,
                 offset = runs.size

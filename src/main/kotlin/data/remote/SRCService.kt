@@ -37,6 +37,7 @@ interface SRCService {
     @GET("runs")
     suspend fun fetchRuns(
         @Query("game") gameId: String,
+        @Query("category") categoryId: String?,
         @Query("status") status: String?,
         @Query("orderby") orderBy: String?,
         @Query("direction") direction: String?,

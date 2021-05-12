@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import data.local.entities.Run
@@ -24,7 +25,12 @@ fun RunsSection(uiState: HomeUIState.RunsUIState) {
                 Text(uiState.message, modifier = Modifier.padding(vertical = 10.dp))
             }
             is LoadingRuns -> item {
-                CircularProgressIndicator(modifier = Modifier.padding(vertical = 10.dp))
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.padding(vertical = 10.dp))
+                }
             }
             is LoadedRuns -> {
                 itemsIndexed(uiState.runs) { index, run ->

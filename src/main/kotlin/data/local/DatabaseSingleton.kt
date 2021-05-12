@@ -7,12 +7,13 @@ import persistence.database.DatabaseInstance
 import persistence.database.Filters
 import persistence.database.Game
 
-inline class FiltersId(val value: Long){
-    companion object{
+inline class FiltersId(val value: Long) {
+    companion object {
         // can't override invoke and private constructor because sqldelight fails generation :(
         val Default = FiltersId(1)
     }
 }
+
 inline class GameId(val value: String)
 inline class CategoryId(val value: String)
 inline class VariableId(val value: String)
@@ -47,10 +48,14 @@ class DatabaseSingleton {
             override fun decode(databaseValue: Long) = FiltersId.Default
             override fun encode(value: FiltersId) = value.value
         }
+        val categoryIdAdapter = object : ColumnAdapter<CategoryId, String> {
+            override fun decode(databaseValue: String) = CategoryId(databaseValue)
+            override fun encode(value: CategoryId) = value.value
+        }
         db = DatabaseInstance(
             driver = driver,
             gameAdapter = Game.Adapter(gameIdAdapter),
-            filtersAdapter = Filters.Adapter(filtersIdAdapter, EnumColumnAdapter())
+            filtersAdapter = Filters.Adapter(filtersIdAdapter, EnumColumnAdapter(), categoryIdAdapter)
         )
     }
 
