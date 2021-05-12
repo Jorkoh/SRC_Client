@@ -1,9 +1,12 @@
 package ui.screens.home
 
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -19,25 +22,46 @@ import kotlin.time.Duration
 
 @Composable
 fun RunsSection(uiState: HomeUIState.RunsUIState) {
-    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+    Box(modifier = Modifier.fillMaxSize()) {
         when (uiState) {
-            is FailedToLoadRuns -> item {
+            is FailedToLoadRuns -> Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text(uiState.message, modifier = Modifier.padding(vertical = 10.dp))
             }
-            is LoadingRuns -> item {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    CircularProgressIndicator(modifier = Modifier.padding(vertical = 10.dp))
-                }
+            is LoadingRuns -> Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                CircularProgressIndicator(modifier = Modifier.padding(vertical = 10.dp))
             }
-            is LoadedRuns -> {
-                itemsIndexed(uiState.runs) { index, run ->
-                    RunItem(index + 1, run)
-                }
+            is LoadedRuns -> RunList(uiState.runs)
+        }
+    }
+}
+
+@Composable
+private fun RunList(runs: List<Run>) {
+    val listState = rememberLazyListState()
+
+    Box {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            itemsIndexed(runs) { index, run ->
+                RunItem(index + 1, run)
             }
         }
+        VerticalScrollbar(
+            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+            adapter = rememberScrollbarAdapter(
+                scrollState = listState,
+                itemCount = runs.size,
+                averageItemSize = 37.dp // Item height plus vertical spacing times two
+            )
+        )
     }
 }
 

@@ -44,8 +44,12 @@ private fun HomeScreenContent(
     BackdropScaffold(
         scaffoldState = scaffoldState,
         appBar = {
+            val gameName = (uiState.value as? HomeUIState.Ready)?.game?.name ?: "..."
+            val runCount = ((uiState.value as? HomeUIState.Ready)?.runsUIState
+                    as? HomeUIState.RunsUIState.LoadedRuns)?.runs?.size
             HomeTopAppBar(
-                gameTitle = (uiState.value as? HomeUIState.Ready)?.game?.name ?: "...",
+                gameName = gameName,
+                runCount = runCount,
                 onChangeGameButtonClicked = onChangeGameButtonClicked,
                 onRefreshButtonClicked = {
                     onRefreshButtonClicked()
@@ -72,13 +76,14 @@ private fun HomeScreenContent(
 
 @Composable
 private fun HomeTopAppBar(
-    gameTitle: String,
+    gameName: String,
+    runCount: Int?,
     onChangeGameButtonClicked: () -> Unit,
     onRefreshButtonClicked: () -> Unit,
     onFiltersButtonClicked: () -> Unit
 ) {
     TopAppBar(
-        title = { Text(gameTitle) },
+        title = { Text("$gameName ${if (runCount != null && runCount > 0) "($runCount runs)" else ""}") },
         navigationIcon = { GameDialogButton(onChangeGameButtonClicked) },
         actions = {
             RefreshButton(onRefreshButtonClicked)
