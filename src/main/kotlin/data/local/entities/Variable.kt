@@ -3,6 +3,8 @@ package data.local.entities
 import data.local.CategoryId
 import data.local.ValueId
 import data.local.VariableId
+import kotlinx.serialization.Serializable
+import ui.screens.home.Displayable
 
 enum class VariableScope(val apiString: String){
     Global("global"),
@@ -25,16 +27,23 @@ data class Variable (
 
     val values : List<Value>,
     val defaultValueId : ValueId?
-)
+) : Displayable {
+    override val uiString: String
+        get() = name
+}
 
 data class Value(
     val valueId: ValueId,
     val label : String,
     val rules : String?,
     val miscellaneousFlag : Boolean?
-)
+) : Displayable {
+    override val uiString: String
+        get() = label
+}
 
-data class VariableAndValue(
+@Serializable
+data class VariableAndValueIds(
     val variableId: VariableId,
     val valueId: ValueId
 )

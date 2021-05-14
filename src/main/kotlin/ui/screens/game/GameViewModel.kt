@@ -1,9 +1,8 @@
-package ui.screens.home
+package ui.screens.game
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import data.SRCRepository
-import data.local.FiltersDAO
 import data.local.GamesDAO
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job

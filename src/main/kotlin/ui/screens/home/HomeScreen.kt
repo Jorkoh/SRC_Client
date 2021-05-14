@@ -9,6 +9,7 @@ import androidx.compose.ui.res.vectorXmlResource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import persistence.database.Filters
+import ui.screens.game.GameDialog
 import ui.theme.offWhite
 
 @Composable
@@ -65,7 +66,7 @@ private fun HomeScreenContent(
         frontLayerContent = { RunsSection(uiState.value.runsUIState) },
         backLayerContent = {
             FiltersSection(
-                filtersUIState = uiState.value.filtersUIState,
+                uiState = uiState.value.filtersUIState,
                 onFiltersChanged = onFiltersChanged
             )
         },

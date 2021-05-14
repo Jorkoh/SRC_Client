@@ -2,11 +2,14 @@ import data.local.CategoryId;
 import data.local.FiltersId;
 import data.local.GameId;
 import data.local.entities.RunStatus;
+import data.local.entities.VariableAndValueIds;
+import kotlin.collections.List;
 
 CREATE TABLE filters (
     id INTEGER AS FiltersId PRIMARY KEY,
     runStatus TEXT AS RunStatus,
-    categoryId TEXT AS CategoryId
+    categoryId TEXT AS CategoryId,
+    variablesAndValuesIds TEXT AS List<VariableAndValueIds> NOT NULL
 );
 
 CREATE TABLE game (
@@ -16,8 +19,8 @@ CREATE TABLE game (
     isSelected INTEGER AS Boolean NOT NULL DEFAULT 0
 );
 
-INSERT INTO filters (id, runStatus, categoryId)
-VALUES (1, "Pending", NULL);
+INSERT INTO filters (id, runStatus, categoryId, variablesAndValuesIds)
+VALUES (1, "Pending", NULL, "[]");
 
 getSelectedGame:
 SELECT *
@@ -40,13 +43,13 @@ FROM filters
 LIMIT 1;
 
 updateFilters:
-INSERT OR REPLACE INTO filters (id, runStatus, categoryId)
+INSERT OR REPLACE INTO filters (id, runStatus, categoryId, variablesAndValuesIds)
 VALUES ?;
 
 resetFilters:
 UPDATE filters
-SET runStatus = "Pending",
-    categoryId = NULL
+SET categoryId = NULL,
+    variablesAndValuesIds = "[]"
 WHERE id = 1;
 
 getGameCount:

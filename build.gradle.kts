@@ -16,6 +16,7 @@ buildscript {
 
 plugins {
     kotlin("jvm") version "1.4.32"
+    kotlin("plugin.serialization") version "1.5.0"
     id("org.jetbrains.compose") version "0.4.0-build188"
     id("org.jetbrains.kotlin.kapt") version "1.4.32"
     id("com.squareup.sqldelight") version "1.5.0"
@@ -45,6 +46,8 @@ dependencies {
     implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
     implementation("com.squareup.moshi:moshi-adapters:1.12.0")
     kapt("com.squareup.moshi:moshi-kotlin-codegen:1.12.0")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0")
 
     implementation("io.insert-koin:koin-core:3.0.1")
 

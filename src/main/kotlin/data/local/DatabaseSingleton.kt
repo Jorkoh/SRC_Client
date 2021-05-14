@@ -3,6 +3,11 @@ package data.local
 import com.squareup.sqldelight.ColumnAdapter
 import com.squareup.sqldelight.EnumColumnAdapter
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
+import data.local.entities.VariableAndValueIds
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import persistence.database.DatabaseInstance
 import persistence.database.Filters
 import persistence.database.Game
@@ -16,7 +21,11 @@ inline class FiltersId(val value: Long) {
 
 inline class GameId(val value: String)
 inline class CategoryId(val value: String)
+
+@Serializable
 inline class VariableId(val value: String)
+
+@Serializable
 inline class ValueId(val value: String)
 inline class LevelId(val value: String)
 inline class RunId(val value: String)
@@ -52,10 +61,22 @@ class DatabaseSingleton {
             override fun decode(databaseValue: String) = CategoryId(databaseValue)
             override fun encode(value: CategoryId) = value.value
         }
+        val variablesAndValuesIdsAdapter = object : ColumnAdapter<List<VariableAndValueIds>, String> {
+            override fun decode(databaseValue: String) = Json.decodeFromString<List<VariableAndValueIds>>(databaseValue)
+            override fun encode(value: List<VariableAndValueIds>) = Json.encodeToString(value)
+        }
+
         db = DatabaseInstance(
             driver = driver,
-            gameAdapter = Game.Adapter(gameIdAdapter),
-            filtersAdapter = Filters.Adapter(filtersIdAdapter, EnumColumnAdapter(), categoryIdAdapter)
+            gameAdapter = Game.Adapter(
+                idAdapter = gameIdAdapter
+            ),
+            filtersAdapter = Filters.Adapter(
+                idAdapter = filtersIdAdapter,
+                runStatusAdapter = EnumColumnAdapter(),
+                categoryIdAdapter = categoryIdAdapter,
+                variablesAndValuesIdsAdapter = variablesAndValuesIdsAdapter
+            )
         )
     }
 

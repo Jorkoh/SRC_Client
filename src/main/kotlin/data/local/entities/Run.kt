@@ -21,7 +21,7 @@ data class Run(
     val gameId: GameId,
     val categoryId: CategoryId,
     val levelId: LevelId?,
-    val variablesAndValues: List<VariableAndValue>,
+    val variablesAndValues: List<VariableAndValueIds>,
 
     val runStatus: RunStatus,
     val verifierId: UserId?,

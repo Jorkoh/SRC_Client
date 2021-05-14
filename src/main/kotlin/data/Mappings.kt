@@ -76,7 +76,7 @@ fun RunResponse.toRun() = Run(
     categoryId = CategoryId(categoryId),
     levelId = levelId?.let(::LevelId),
     variablesAndValues = variablesAndValues.variablesAndValues.map {
-        VariableAndValue(VariableId(it.variableId), ValueId(it.valueId))
+        VariableAndValueIds(VariableId(it.variableId), ValueId(it.valueId))
     },
     runStatus = status. value,
     verifierId = status.verifierId?.let(::UserId),

@@ -1,15 +1,15 @@
 package data
 
-import data.local.CategoryId
 import data.local.GameId
 import data.local.GamesDAO
 import data.local.entities.Run
-import data.local.entities.RunStatus
 import data.remote.SRCService
+import data.remote.responses.RunResponse
 import data.remote.utils.RunSortParameters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import persistence.database.Filters
 import persistence.database.Game
 
 class SRCRepository(
@@ -45,21 +45,30 @@ class SRCRepository(
 
     fun getRuns(
         gameId: GameId,
-        runStatus: RunStatus?,
-        categoryId: CategoryId?,
+        filters: Filters,
         sortingParams: RunSortParameters? = null
     ) = flow {
         val runs = mutableListOf<Run>()
+        var offset = 0
         do {
             val response = srcService.fetchRuns(
                 gameId = gameId.value,
-                categoryId = categoryId?.value,
-                status = runStatus?.apiString,
+                categoryId = filters.categoryId?.value,
+                status = filters.runStatus?.apiString,
                 orderBy = sortingParams?.discriminator?.apiString,
                 direction = sortingParams?.direction?.apiString,
-                offset = runs.size
+                offset = offset
             ).apply {
-                runs.addAll(runResponses.map { it.toRun() })
+                offset += runResponses.size
+                val filteredRunResponses = runResponses.filter { response ->
+                    // A response needs to match all defined custom variable filters
+                    filters.variablesAndValuesIds.all { (filterVariableId, filterValueId) ->
+                        response.variablesAndValues.variablesAndValues.any { (responseVariableId, responseValueId) ->
+                            responseVariableId == filterVariableId.value && responseValueId == filterValueId.value
+                        }
+                    }
+                }
+                runs.addAll(filteredRunResponses.map(RunResponse::toRun))
             }
         } while (response.pagination.size == response.pagination.max)
         emit(runs)

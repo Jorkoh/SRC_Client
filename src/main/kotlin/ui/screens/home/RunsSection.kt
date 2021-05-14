@@ -75,10 +75,9 @@ private fun RunItem(position: Int, run: Run) {
             .padding(vertical = 8.dp, horizontal = 24.dp)
     ) {
         Text(position.toString())
-        Spacer(Modifier.width(20.dp))
         Text(run.primaryTime.toSRCString())
-        Spacer(Modifier.width(20.dp))
         Text(run.players.first().name)
+        Text(run.runStatus.uiString)
     }
 }
 

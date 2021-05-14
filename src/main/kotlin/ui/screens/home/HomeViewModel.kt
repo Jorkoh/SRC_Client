@@ -85,8 +85,7 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
             runsQueryJob = scope.launch {
                 val runs = srcRepository.getRuns(
                     gameId = fullGame.gameId,
-                    categoryId = filters.categoryId,
-                    runStatus = filters.runStatus,
+                    filters = filters
                 ).first()
                 setRunsUIState(HomeUIState.RunsUIState.LoadedRuns(runs))
             }
@@ -159,7 +158,8 @@ sealed class HomeUIState(
             val filters: Filters = Filters(
                 id = FiltersId.Default,
                 runStatus = RunStatus.Default,
-                categoryId = null
+                categoryId = null,
+                variablesAndValuesIds = emptyList()
             ),
             val game: FullGame
         ) : FiltersUIState()
