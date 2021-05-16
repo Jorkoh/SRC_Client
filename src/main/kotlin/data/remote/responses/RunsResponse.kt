@@ -37,7 +37,7 @@ data class RunResponse(
     @Json(name = "comment")
     val comment: String?,
     @Json(name = "date")
-    val runDate: Date,
+    val runDate: Date?,
     @Json(name = "links")
     val links: List<Link>,
     @Json(name = "splits")

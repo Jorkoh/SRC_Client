@@ -30,7 +30,7 @@ data class Run(
     val players: List<User>,
 
     val comment: String?,
-    val runDate: Date,
+    val runDate: Date?,
     val submissionDate: Date?,
     val primaryTime: Duration,
     val realTime: Duration?,
