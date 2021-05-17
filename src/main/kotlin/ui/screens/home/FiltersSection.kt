@@ -1,9 +1,9 @@
 package ui.screens.home
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,68 +40,69 @@ private fun FiltersRow(
     uiState: HomeUIState.FiltersUIState.LoadedFilters,
     onFiltersChanged: (Filters) -> Unit
 ) {
-    FlowRow(
-        horizontalGap = 24.dp,
-        verticalGap = 8.dp,
-        modifier = Modifier.padding(16.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
         val gameVariables = uiState.game.categories.firstOrNull { it.type == CategoryType.PerGame }
             ?.variables?.filter { it.categoryId == null }
-
-        // Category filter TODO add level support
         val categories = uiState.game.categories.filter { it.type == CategoryType.PerGame }
         val selectedCategory = categories.firstOrNull { it.categoryId == uiState.filters.categoryId }
-        FilterComponent(
-            title = "Category",
-            selectedOption = selectedCategory,
-            options = categories,
-            onOptionSelected = { newCategory ->
-                onFiltersChanged(
-                    uiState.filters.copy(
+
+        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+            // Category filter TODO add level support
+            FilterComponent(
+                title = "Category",
+                selectedOption = selectedCategory,
+                options = categories,
+                onOptionSelected = { newCategory ->
+                    onFiltersChanged(uiState.filters.copy(
                         categoryId = newCategory?.categoryId,
                         variablesAndValuesIds = uiState.filters.variablesAndValuesIds.toMutableList()
                             .filter { filterVariable ->
                                 // When changing category only keep game variable filters
                                 gameVariables?.any { filterVariable.variableId == it.variableId } ?: false
                             }
-                    )
-                )
-            }
-        )
+                    ))
+                }
+            )
+            // Run status filter
+            val runStatuses = RunStatus.values().toList()
+            val selectedRunStatus = uiState.filters.runStatus
+            FilterComponent(
+                title = "Status",
+                selectedOption = selectedRunStatus,
+                options = runStatuses,
+                onOptionSelected = { onFiltersChanged(uiState.filters.copy(runStatus = it)) }
+            )
+        }
 
-        // Run status filter
-        val runStatuses = RunStatus.values().toList()
-        val selectedRunStatus = uiState.filters.runStatus
-        FilterComponent(
-            title = "Status",
-            selectedOption = selectedRunStatus,
-            options = runStatuses,
-            onOptionSelected = { onFiltersChanged(uiState.filters.copy(runStatus = it)) }
-        )
+        // Custom leaderboard variables filters from game TODO add level support
+        if (!gameVariables.isNullOrEmpty()) {
+            Column {
+                Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
+                VariablesFilters(gameVariables, uiState.filters, onFiltersChanged)
+            }
+        }
 
         // Custom leaderboard variables filters from selected category
-        VariablesFilters(
-            selectedCategory?.variables?.filter { it.categoryId != null },
-            uiState.filters,
-            onFiltersChanged
-        )
-        // Custom leaderboard variables filters from game TODO add level support
-        VariablesFilters(
-            gameVariables,
-            uiState.filters,
-            onFiltersChanged
-        )
+        val categoryVariables = selectedCategory?.variables?.filter { it.categoryId != null }
+        AnimatedVisibility(!categoryVariables.isNullOrEmpty()) {
+            if (!categoryVariables.isNullOrEmpty()) {
+                Column {
+                    Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
+                    VariablesFilters(categoryVariables, uiState.filters, onFiltersChanged)
+                }
+            }
+        }
     }
 }
 
 @Composable
 private fun VariablesFilters(
-    variables: List<Variable>?,
+    variables: List<Variable>,
     filters: Filters,
     onFiltersChanged: (Filters) -> Unit
 ) {
     // Pair the variable with its possible values and the selected one (if exists) on the filter
-    val variableValuesAndSelectedList = variables?.map { variable ->
+    val variableValuesAndSelectedList = variables.map { variable ->
         Triple(
             variable,
             variable.values,
@@ -111,9 +112,12 @@ private fun VariablesFilters(
                 }?.valueId
             }
         )
-    }?.sortedByDescending { it.first.isSubCategory }
+    }.sortedByDescending { it.first.isSubCategory }
 
-    if (variableValuesAndSelectedList != null) {
+    FlowRow(
+        horizontalGap = 24.dp,
+        verticalGap = 8.dp,
+    ) {
         for ((variable, values, selectedValue) in variableValuesAndSelectedList) {
             FilterComponent(
                 title = "${variable.name}${if (variable.isSubCategory) "*" else ""}",
