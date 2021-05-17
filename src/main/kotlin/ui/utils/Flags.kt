@@ -1,7 +1,7 @@
 package ui.utils
 
 fun String.toFlagEmoji(): String {
-    val countryCode = hardcodedPairings.getOrElse(this) { this }.toUpperCase()
+    val countryCode = squashIndependenceMovements().toUpperCase()
     require(countryCode.length == 2 && countryCode[0].isLetter() && countryCode[1].isLetter())
 
     val firstLetter = Character.codePointAt(countryCode, 0) - 0x41 + 0x1F1E6
@@ -9,6 +9,4 @@ fun String.toFlagEmoji(): String {
     return String(Character.toChars(firstLetter)) + String(Character.toChars(secondLetter))
 }
 
-private val hardcodedPairings = mapOf(
-    "gb/eng" to "GB"
-)
+private fun String.squashIndependenceMovements() = split('/')[0]

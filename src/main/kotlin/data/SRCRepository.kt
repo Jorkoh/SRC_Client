@@ -3,6 +3,7 @@ package data
 import data.local.GameId
 import data.local.GamesDAO
 import data.local.entities.Run
+import data.local.entities.RunStatus
 import data.local.entities.VariableAndValueIds
 import data.local.entities.utils.RunSortDirection
 import data.local.entities.utils.RunSortDiscriminator
@@ -21,7 +22,6 @@ class SRCRepository(
     private val gamesDAO: GamesDAO,
     private val srcService: SRCService
 ) {
-    //
     private var cachedRuns: List<Run> = emptyList()
 
     fun getGames(query: String) = gamesDAO.getGames(query)
@@ -29,9 +29,7 @@ class SRCRepository(
     fun getFullGame(gameId: GameId) =
         flow {
             cacheRuns(gameId)
-            val fullGame = srcService.fetchFullGame(
-                gameId = gameId.value
-            ).fullGameResponse.toFullGame()
+            val fullGame = srcService.fetchFullGame(gameId = gameId.value).fullGameResponse.toFullGame()
             emit(fullGame)
         }
 
@@ -89,7 +87,7 @@ class SRCRepository(
         settings: Settings
     ) = withContext(Dispatchers.Default) {
         cachedRuns.filter { run ->
-            (settings.runStatus?.let { run.runStatus == it } ?: true)
+            (settings.runStatus?.filter(run) ?: true)
                     && (settings.categoryId?.let { run.categoryId == it } ?: true)
                     && settings.variablesAndValuesIds.filter(run)
         }.sortedWith { run1, run2 ->
@@ -115,6 +113,12 @@ class SRCRepository(
                 }
             )
         }
+    }
+
+    private fun RunStatus.filter(run: Run) = if (this == RunStatus.PendingPlusApproved) {
+        run.runStatus == RunStatus.Pending || run.runStatus == RunStatus.Approved
+    } else {
+        run.runStatus == this
     }
 
     private fun List<VariableAndValueIds>.filter(run: Run) = all { (filterVariableId, filterValueId) ->

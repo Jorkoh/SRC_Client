@@ -8,11 +8,10 @@ import kotlin.time.Duration
 enum class RunStatus(val apiString: String, override val uiString: String) : Displayable {
     Pending("new", "Pending"),
     Approved("verified", "Approved"),
-    Rejected("rejected", "Rejected");
 
-    companion object{
-        val Default = Pending
-    }
+    // TODO this sort won't work when used directly on the API, need to make it type safe
+    PendingPlusApproved("null", "Pending + Approved"),
+    Rejected("rejected", "Rejected");
 }
 
 data class Run(
