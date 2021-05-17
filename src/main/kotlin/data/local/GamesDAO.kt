@@ -22,15 +22,20 @@ class GamesDAO(databaseSingleton: DatabaseSingleton) {
         }
     }
 
-    fun insertGames(games: List<Game>) {
+    fun insertGames(games: List<Game>, keepOldSelected: Boolean = false) {
         queries.transaction {
+            val previousId = queries.getSelectedGame().executeAsOneOrNull()?.id
+            queries.deleteGames()
             games.forEach { queries.insertGame(it) }
-
-            // Set Minecraft as default, if not found w/e is first
             queries.updateSelectedGameId(
-                games.firstOrNull {
-                    it.id == GameId("j1npme6p")
-                }?.id ?: games.first().id
+                // previous, default or w/e is first
+                if (keepOldSelected && previousId != null && games.any { it.id == previousId }) {
+                    previousId
+                } else if (games.any { it.id == GameId.Default }) {
+                    GameId.Default
+                } else {
+                    games.first().id
+                }
             )
         }
     }

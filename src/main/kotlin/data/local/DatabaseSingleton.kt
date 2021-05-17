@@ -19,7 +19,12 @@ inline class FiltersId(val value: Long) {
     }
 }
 
-inline class GameId(val value: String)
+inline class GameId(val value: String){
+    companion object{
+        // Minecraft yo
+        val Default = GameId("j1npme6p")
+    }
+}
 inline class CategoryId(val value: String)
 
 @Serializable

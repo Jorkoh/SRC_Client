@@ -66,6 +66,9 @@ FROM game
 WHERE name LIKE '%'||:nameMatch||'%'
 LIMIT :limit;
 
+deleteGames:
+DELETE FROM game;
+
 insertGame:
-INSERT OR REPLACE INTO game (id, abbreviation, name)
+INSERT INTO game (id, abbreviation, name)
 VALUES ?;
