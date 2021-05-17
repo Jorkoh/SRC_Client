@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.vectorXmlResource
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import persistence.database.Settings
@@ -67,29 +68,31 @@ private fun HomeScreenContent(
                     scope.launch { scaffoldState.conceal() }
                 },
                 onFiltersButtonClicked = {
-                    backdropSection = BackdropSection.Filters
                     scope.launch {
                         with(scaffoldState) {
-                            if (isConcealed) {
-                                logger.debug { "REVEAL FROM FILTERS" }
+                            if (backdropSection != BackdropSection.Filters) {
+                                conceal()
+                                backdropSection = BackdropSection.Filters
+                                // TODO this delay lets the backdrop layout so the reveal animation actually works :/
+                                delay(40)
                                 reveal()
                             } else {
-                                logger.debug { "CONCEAL FROM FILTERS" }
-                                conceal()
+                                if (targetValue == BackdropValue.Concealed) reveal() else conceal()
                             }
                         }
                     }
                 },
                 onSortButtonClicked = {
-                    backdropSection = BackdropSection.Sort
                     scope.launch {
                         with(scaffoldState) {
-                            if (isConcealed) {
-                                logger.debug { "REVEAL FROM SORT" }
+                            if (backdropSection != BackdropSection.Sort) {
+                                conceal()
+                                backdropSection = BackdropSection.Sort
+                                // TODO this delay lets the backdrop layout so the reveal animation actually works :/
+                                delay(40)
                                 reveal()
                             } else {
-                                logger.debug { "CONCEAL FROM SORT" }
-                                conceal()
+                                if (targetValue == BackdropValue.Concealed) reveal() else conceal()
                             }
                         }
                     }
