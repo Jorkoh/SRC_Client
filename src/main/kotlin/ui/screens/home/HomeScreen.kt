@@ -22,7 +22,7 @@ fun HomeScreen() {
         scope = scope,
         onChangeGameButtonClicked = { viewModel.setGameSelectorIsOpen(true) },
         onChangeGameDialogDismissed = { viewModel.setGameSelectorIsOpen(false) },
-        onRefreshButtonClicked = viewModel::refreshRuns,
+        onRefreshButtonClicked = viewModel::refreshGame,
         onFiltersChanged = viewModel::changeFilters
     )
 }
@@ -45,13 +45,14 @@ private fun HomeScreenContent(
     BackdropScaffold(
         scaffoldState = scaffoldState,
         appBar = {
-            val gameName = (uiState.value as? HomeUIState.Ready)?.game?.name ?: "..."
+            val gameName = (uiState.value as? HomeUIState.Ready)?.game?.name ?: "Loading game..."
             val runCount = ((uiState.value as? HomeUIState.Ready)?.runsUIState
                     as? HomeUIState.RunsUIState.LoadedRuns)?.runs?.size
             HomeTopAppBar(
                 gameName = gameName,
                 runCount = runCount,
                 onChangeGameButtonClicked = onChangeGameButtonClicked,
+                refreshButtonEnabled = uiState.value is HomeUIState.Ready,
                 onRefreshButtonClicked = {
                     onRefreshButtonClicked()
                     scope.launch { scaffoldState.conceal() }
@@ -80,14 +81,15 @@ private fun HomeTopAppBar(
     gameName: String,
     runCount: Int?,
     onChangeGameButtonClicked: () -> Unit,
-    onRefreshButtonClicked: () -> Unit,
-    onFiltersButtonClicked: () -> Unit
+    refreshButtonEnabled: Boolean,
+    onFiltersButtonClicked: () -> Unit,
+    onRefreshButtonClicked: () -> Unit
 ) {
     TopAppBar(
         title = { Text("$gameName ${if (runCount != null && runCount > 0) "($runCount runs)" else ""}") },
         navigationIcon = { GameDialogButton(onChangeGameButtonClicked) },
         actions = {
-            RefreshButton(onRefreshButtonClicked)
+            RefreshButton(refreshButtonEnabled, onRefreshButtonClicked)
             FiltersButton(onFiltersButtonClicked)
         }
     )
@@ -109,14 +111,16 @@ private fun GameDialogButton(
 
 @Composable
 private fun RefreshButton(
+    enabled: Boolean,
     onClick: () -> Unit
 ) {
     IconButton(
+        enabled = enabled,
         onClick = onClick
     ) {
         Icon(
             imageVector = Icons.Default.Refresh,
-            contentDescription = "Refresh"
+            contentDescription = "Refresh game"
         )
     }
 }

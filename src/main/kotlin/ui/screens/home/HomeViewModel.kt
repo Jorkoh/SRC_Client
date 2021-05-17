@@ -3,6 +3,7 @@ package ui.screens.home
 import data.SRCRepository
 import data.local.FiltersDAO
 import data.local.FiltersId
+import data.local.GameId
 import data.local.GamesDAO
 import data.local.entities.FullGame
 import data.local.entities.Run
@@ -17,7 +18,6 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import persistence.database.Filters
-import persistence.database.Game
 
 class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
 
@@ -28,7 +28,7 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
     init {
         scope.launch {
             gamesDAO.getSelectedGame().collect { newSelectedGame ->
-                onSelectedGameChanged(newSelectedGame)
+                onSelectedGameChanged(newSelectedGame.id)
             }
         }
     }
@@ -39,12 +39,10 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
     private lateinit var fullGame: FullGame // lateinit kinda yikes
 
     private var fullGameJob: Job? = null
-    private var filtersJob: Job? = null
     private var runsQueryJob: Job? = null
 
-    private fun onSelectedGameChanged(newSelectedGame: Game) {
+    private fun onSelectedGameChanged(newSelectedGameId: GameId) {
         fullGameJob?.cancel()
-        filtersJob?.cancel()
         runsQueryJob?.cancel()
 
         if (homeUIState.value.filtersUIState is HomeUIState.FiltersUIState.LoadedFilters) {
@@ -59,7 +57,7 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
             gameSelectorIsOpen = _homeUIState.value.gameSelectorIsOpen
         )
         fullGameJob = scope.launch {
-            fullGame = srcRepository.getFullGame(newSelectedGame.id).first()
+            fullGame = srcRepository.getFullGame(newSelectedGameId).first()
             _homeUIState.value = HomeUIState.Ready(
                 game = fullGame,
                 filtersUIState = _homeUIState.value.filtersUIState,
@@ -74,22 +72,26 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
         filtersDAO.getFilters().collect { filters ->
             (homeUIState.value as? HomeUIState.Ready)?.game?.let { game ->
                 setFiltersUIState(HomeUIState.FiltersUIState.LoadedFilters(filters, game))
+                refreshRuns()
             }
         }
     }
 
-    fun refreshRuns() {
+    private fun refreshRuns() {
         runsQueryJob?.cancel()
         (homeUIState.value.filtersUIState as? HomeUIState.FiltersUIState.LoadedFilters)?.filters?.let { filters ->
             setRunsUIState(HomeUIState.RunsUIState.LoadingRuns)
             runsQueryJob = scope.launch {
-                val runs = srcRepository.getRuns(
-                    gameId = fullGame.gameId,
+                val runs = srcRepository.getCachedRuns(
                     filters = filters
-                ).first()
+                )
                 setRunsUIState(HomeUIState.RunsUIState.LoadedRuns(runs))
             }
         }
+    }
+
+    fun refreshGame() {
+        (homeUIState.value as? HomeUIState.Ready)?.game?.gameId?.let { onSelectedGameChanged(it) }
     }
 
     fun changeFilters(newFilters: Filters) {
@@ -143,7 +145,7 @@ sealed class HomeUIState(
 ) {
     class LoadingGame(
         gameSelectorIsOpen: Boolean = false
-    ) : HomeUIState(FiltersUIState.LoadingFilters, RunsUIState.LoadedRuns(), gameSelectorIsOpen)
+    ) : HomeUIState(FiltersUIState.LoadingFilters, RunsUIState.LoadingRuns, gameSelectorIsOpen)
 
     class Ready(
         val game: FullGame,

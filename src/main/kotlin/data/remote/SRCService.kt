@@ -37,11 +37,11 @@ interface SRCService {
     @GET("runs")
     suspend fun fetchRuns(
         @Query("game") gameId: String,
-        @Query("category") categoryId: String?,
-        @Query("status") status: String?,
-        @Query("orderby") orderBy: String?,
-        @Query("direction") direction: String?,
-        @Query("offset") offset : Int?,
+        @Query("category") categoryId: String? = null,
+        @Query("status") status: String? = null,
+        @Query("orderby") orderBy: String? = null,
+        @Query("direction") direction: String? = null,
+        @Query("offset") offset : Int? = null,
         // Fixed query params
         @Query("embed") embed: String = "players",
         @Query("max") max: Int = PAGINATION_MAX,
