@@ -8,7 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.res.vectorXmlResource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import persistence.database.Filters
+import mu.KotlinLogging
+import persistence.database.Settings
 import ui.screens.game.GameDialog
 import ui.theme.offWhite
 
@@ -23,8 +24,12 @@ fun HomeScreen() {
         onChangeGameButtonClicked = { viewModel.setGameSelectorIsOpen(true) },
         onChangeGameDialogDismissed = { viewModel.setGameSelectorIsOpen(false) },
         onRefreshButtonClicked = viewModel::refreshGame,
-        onFiltersChanged = viewModel::changeFilters
+        onSettingsChanged = viewModel::changeSettings
     )
+}
+
+enum class BackdropSection {
+    Filters, Sort
 }
 
 @Composable
@@ -34,16 +39,20 @@ private fun HomeScreenContent(
     onChangeGameButtonClicked: () -> Unit,
     onChangeGameDialogDismissed: () -> Unit,
     onRefreshButtonClicked: () -> Unit,
-    onFiltersChanged: (Filters) -> Unit,
+    onSettingsChanged: (Settings) -> Unit,
 ) {
     val scaffoldState = rememberBackdropScaffoldState(BackdropValue.Concealed)
+    var backdropSection by remember { mutableStateOf(BackdropSection.Filters) }
 
     if (uiState.value.gameSelectorIsOpen) {
         GameDialog(onDismiss = onChangeGameDialogDismissed)
     }
 
+    val logger = KotlinLogging.logger {}
+
     BackdropScaffold(
         scaffoldState = scaffoldState,
+        gesturesEnabled = false,
         appBar = {
             val gameName = (uiState.value as? HomeUIState.Ready)?.game?.name ?: "Loading game..."
             val runCount = ((uiState.value as? HomeUIState.Ready)?.runsUIState
@@ -58,18 +67,48 @@ private fun HomeScreenContent(
                     scope.launch { scaffoldState.conceal() }
                 },
                 onFiltersButtonClicked = {
+                    backdropSection = BackdropSection.Filters
                     scope.launch {
-                        with(scaffoldState) { if (isConcealed) reveal() else conceal() }
+                        with(scaffoldState) {
+                            if (isConcealed) {
+                                logger.debug { "REVEAL FROM FILTERS" }
+                                reveal()
+                            } else {
+                                logger.debug { "CONCEAL FROM FILTERS" }
+                                conceal()
+                            }
+                        }
                     }
                 },
+                onSortButtonClicked = {
+                    backdropSection = BackdropSection.Sort
+                    scope.launch {
+                        with(scaffoldState) {
+                            if (isConcealed) {
+                                logger.debug { "REVEAL FROM SORT" }
+                                reveal()
+                            } else {
+                                logger.debug { "CONCEAL FROM SORT" }
+                                conceal()
+                            }
+                        }
+                    }
+                }
             )
         },
         frontLayerContent = { RunsSection(uiState.value.runsUIState) },
         backLayerContent = {
-            FiltersSection(
-                uiState = uiState.value.filtersUIState,
-                onFiltersChanged = onFiltersChanged
-            )
+            when (backdropSection) {
+                BackdropSection.Filters -> FiltersSection(
+                    uiState = uiState.value.settingsUIState,
+                    onFiltersChanged = onSettingsChanged
+                )
+                BackdropSection.Sort -> SortSection(
+                    uiState = uiState.value.settingsUIState,
+                    onSortChanged = onSettingsChanged
+                )
+            }
+
         },
         backLayerBackgroundColor = MaterialTheme.colors.offWhite,
         frontLayerShape = MaterialTheme.shapes.large
@@ -82,15 +121,17 @@ private fun HomeTopAppBar(
     runCount: Int?,
     onChangeGameButtonClicked: () -> Unit,
     refreshButtonEnabled: Boolean,
+    onRefreshButtonClicked: () -> Unit,
     onFiltersButtonClicked: () -> Unit,
-    onRefreshButtonClicked: () -> Unit
+    onSortButtonClicked: () -> Unit
 ) {
     TopAppBar(
         title = { Text("$gameName ${if (runCount != null && runCount > 0) "($runCount runs)" else ""}") },
-        navigationIcon = { GameDialogButton(onChangeGameButtonClicked) },
         actions = {
+            GameDialogButton(onChangeGameButtonClicked)
             RefreshButton(refreshButtonEnabled, onRefreshButtonClicked)
             FiltersButton(onFiltersButtonClicked)
+            SortButton(onSortButtonClicked)
         }
     )
 }
@@ -136,6 +177,21 @@ private fun FiltersButton(
         Icon(
             imageVector = vectorXmlResource("ic_filter.xml"),
             contentDescription = "Filters"
+        )
+    }
+}
+
+@Composable
+private fun SortButton(
+    onClick: () -> Unit
+) {
+    IconButton(
+        onClick = onClick
+    ) {
+        // TODO change this to IconToggleButton?
+        Icon(
+            imageVector = vectorXmlResource("ic_sort.xml"),
+            contentDescription = "Sort"
         )
     }
 }

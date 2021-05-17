@@ -69,7 +69,6 @@ fun ValueResponse.toValue() = Value(
     miscellaneousFlag = miscellaneousFlag
 )
 
-// system not mapped for now
 fun RunResponse.toRun() = Run(
     runId = RunId(id),
     gameId = GameId(gameId),
@@ -78,6 +77,9 @@ fun RunResponse.toRun() = Run(
     variablesAndValues = variablesAndValues.variablesAndValues.map {
         VariableAndValueIds(VariableId(it.variableId), ValueId(it.valueId))
     },
+    isEmulated = system.emulated,
+    platformId = system.platformId?.let(::PlatformId),
+    regionId = system.regionId?.let(::RegionId),
     runStatus = status. value,
     verifierId = status.verifierId?.let(::UserId),
     verificationDate = status.verificationDate,

@@ -73,7 +73,7 @@ data class GameSystem(
     @Json(name = "emulated")
     val emulated: Boolean,
     @Json(name = "platform")
-    val platform: String?,
+    val platformId: String?,
     @Json(name = "region")
     val regionId: String?
 )

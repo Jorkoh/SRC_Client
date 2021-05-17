@@ -7,7 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.IntSize
 import data.SRCRepository
 import data.local.DatabaseSingleton
-import data.local.FiltersDAO
+import data.local.SettingsDAO
 import data.local.GamesDAO
 import data.remote.SRCService
 import org.koin.core.context.startKoin
@@ -30,7 +30,7 @@ fun main() = Window(
     startKoin {
         modules(module {
             single { DatabaseSingleton() }
-            single { FiltersDAO(get()) }
+            single { SettingsDAO(get()) }
             single { GamesDAO(get()) }
             single { SRCService.create() }
             single { SRCRepository(get(), get()) }

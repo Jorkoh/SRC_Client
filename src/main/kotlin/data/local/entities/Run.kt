@@ -23,22 +23,27 @@ data class Run(
     val levelId: LevelId?,
     val variablesAndValues: List<VariableAndValueIds>,
 
+    val isEmulated : Boolean,
+    val platformId : PlatformId?,
+    val regionId : RegionId?,
+
     val runStatus: RunStatus,
     val verifierId: UserId?,
-    val verificationDate: Date?,
 
     val players: List<User>,
 
-    val comment: String?,
     val runDate: Date?,
     val submissionDate: Date?,
+    val verificationDate: Date?,
+
     val primaryTime: Duration,
     val realTime: Duration?,
     val realTimeNoLoads: Duration?,
     val inGameTime: Duration?,
+
+    val comment: String?,
     val videoText: String?,
     val videoLinks: List<String>,
-
     val weblink: String
 )
 

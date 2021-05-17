@@ -1,13 +1,14 @@
 package ui.screens.home
 
 import data.SRCRepository
-import data.local.FiltersDAO
-import data.local.FiltersId
 import data.local.GameId
 import data.local.GamesDAO
+import data.local.SettingsDAO
+import data.local.SettingsId
 import data.local.entities.FullGame
 import data.local.entities.Run
-import data.local.entities.RunStatus
+import data.local.entities.utils.RunSortDirection
+import data.local.entities.utils.RunSortDiscriminator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,11 +18,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import persistence.database.Filters
+import persistence.database.Settings
 
 class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
 
-    private val filtersDAO by inject<FiltersDAO>()
+    private val settingsDAO by inject<SettingsDAO>()
     private val gamesDAO by inject<GamesDAO>()
     private val srcRepository by inject<SRCRepository>()
 
@@ -45,12 +46,12 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
         fullGameJob?.cancel()
         runsQueryJob?.cancel()
 
-        if (homeUIState.value.filtersUIState is HomeUIState.FiltersUIState.LoadedFilters) {
+        if (homeUIState.value.settingsUIState is HomeUIState.SettingsUIState.LoadedSettings) {
             /*
-             Reset the filters if they were loaded from another game, this is iffy but resetting
+             Reset the game filters if they were already loaded, this is iffy but resetting
              after loading new ones and checking for validity wasn't updating the query flow :/
              */
-            filtersDAO.resetFilters()
+            settingsDAO.resetGameSpecificSettings()
         }
 
         _homeUIState.value = HomeUIState.LoadingGame(
@@ -60,18 +61,18 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
             fullGame = srcRepository.getFullGame(newSelectedGameId).first()
             _homeUIState.value = HomeUIState.Ready(
                 game = fullGame,
-                filtersUIState = _homeUIState.value.filtersUIState,
+                settingsUIState = _homeUIState.value.settingsUIState,
                 runsUIState = _homeUIState.value.runsUIState,
                 gameSelectorIsOpen = _homeUIState.value.gameSelectorIsOpen
             )
-            observeFilters()
+            observeSettings()
         }
     }
 
-    private suspend fun observeFilters() {
-        filtersDAO.getFilters().collect { filters ->
+    private suspend fun observeSettings() {
+        settingsDAO.getSettings().collect { settings ->
             (homeUIState.value as? HomeUIState.Ready)?.game?.let { game ->
-                setFiltersUIState(HomeUIState.FiltersUIState.LoadedFilters(filters, game))
+                setSettingsUIState(HomeUIState.SettingsUIState.LoadedSettings(settings, game))
                 refreshRuns()
             }
         }
@@ -79,11 +80,11 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
 
     private fun refreshRuns() {
         runsQueryJob?.cancel()
-        (homeUIState.value.filtersUIState as? HomeUIState.FiltersUIState.LoadedFilters)?.filters?.let { filters ->
+        (homeUIState.value.settingsUIState as? HomeUIState.SettingsUIState.LoadedSettings)?.settings?.let { settings ->
             setRunsUIState(HomeUIState.RunsUIState.LoadingRuns)
             runsQueryJob = scope.launch {
                 val runs = srcRepository.getCachedRuns(
-                    filters = filters
+                    settings = settings
                 )
                 setRunsUIState(HomeUIState.RunsUIState.LoadedRuns(runs))
             }
@@ -94,18 +95,18 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
         (homeUIState.value as? HomeUIState.Ready)?.game?.gameId?.let { onSelectedGameChanged(it) }
     }
 
-    fun changeFilters(newFilters: Filters) {
-        filtersDAO.setFilters(newFilters)
+    fun changeSettings(newSettings: Settings) {
+        settingsDAO.setSettings(newSettings)
     }
 
 /* UTILS STUFF TO MANAGE STATE CLASS */
 
-    private fun setFiltersUIState(filtersUIState: HomeUIState.FiltersUIState) {
+    private fun setSettingsUIState(settingsUIState: HomeUIState.SettingsUIState) {
         _homeUIState.value = when (val previous = _homeUIState.value) {
             is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(previous.gameSelectorIsOpen)
             is HomeUIState.Ready -> HomeUIState.Ready(
                 game = previous.game,
-                filtersUIState = filtersUIState,
+                settingsUIState = settingsUIState,
                 runsUIState = previous.runsUIState,
                 gameSelectorIsOpen = previous.gameSelectorIsOpen
             )
@@ -117,7 +118,7 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
             is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(previous.gameSelectorIsOpen)
             is HomeUIState.Ready -> HomeUIState.Ready(
                 game = previous.game,
-                filtersUIState = previous.filtersUIState,
+                settingsUIState = previous.settingsUIState,
                 runsUIState = runsUIState,
                 gameSelectorIsOpen = previous.gameSelectorIsOpen
             )
@@ -128,7 +129,7 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
         _homeUIState.value = when (val previous = _homeUIState.value) {
             is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(isOpen)
             is HomeUIState.Ready -> HomeUIState.Ready(
-                filtersUIState = previous.filtersUIState,
+                settingsUIState = previous.settingsUIState,
                 runsUIState = previous.runsUIState,
                 game = previous.game,
                 gameSelectorIsOpen = isOpen
@@ -139,32 +140,34 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
 
 // TODO figure out a proper state nesting solution, right now it's pretty awkward
 sealed class HomeUIState(
-    val filtersUIState: FiltersUIState,
+    val settingsUIState: SettingsUIState,
     val runsUIState: RunsUIState,
     val gameSelectorIsOpen: Boolean,
 ) {
     class LoadingGame(
         gameSelectorIsOpen: Boolean = false
-    ) : HomeUIState(FiltersUIState.LoadingFilters, RunsUIState.LoadingRuns, gameSelectorIsOpen)
+    ) : HomeUIState(SettingsUIState.LoadingSettings, RunsUIState.LoadingRuns, gameSelectorIsOpen)
 
     class Ready(
         val game: FullGame,
-        filtersUIState: FiltersUIState,
+        settingsUIState: SettingsUIState,
         runsUIState: RunsUIState,
         gameSelectorIsOpen: Boolean = false
-    ) : HomeUIState(filtersUIState, runsUIState, gameSelectorIsOpen)
+    ) : HomeUIState(settingsUIState, runsUIState, gameSelectorIsOpen)
 
-    sealed class FiltersUIState {
-        object LoadingFilters : FiltersUIState()
-        class LoadedFilters(
-            val filters: Filters = Filters(
-                id = FiltersId.Default,
-                runStatus = RunStatus.Default,
+    sealed class SettingsUIState {
+        object LoadingSettings : SettingsUIState()
+        class LoadedSettings(
+            val settings: Settings = Settings(
+                id = SettingsId.Default,
+                runStatus = null,
                 categoryId = null,
-                variablesAndValuesIds = emptyList()
+                variablesAndValuesIds = emptyList(),
+                runSortDiscriminator = RunSortDiscriminator.Default,
+                runSortDirection = RunSortDirection.Default
             ),
             val game: FullGame
-        ) : FiltersUIState()
+        ) : SettingsUIState()
     }
 
     sealed class RunsUIState {

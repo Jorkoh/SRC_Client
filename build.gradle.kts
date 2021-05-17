@@ -17,7 +17,7 @@ buildscript {
 plugins {
     kotlin("jvm") version "1.4.32"
     kotlin("plugin.serialization") version "1.5.0"
-    id("org.jetbrains.compose") version "0.4.0-build188"
+    id("org.jetbrains.compose") version "0.4.0-build190"
     id("org.jetbrains.kotlin.kapt") version "1.4.32"
     id("com.squareup.sqldelight") version "1.5.0"
 }

@@ -12,14 +12,15 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.vectorXmlResource
 
 @Composable
-fun <T : Displayable> FilterComponent(
+fun <T : Displayable> SettingComponent(
     title: String,
     selectedOption: T?,
     options: List<T>,
+    addAllOption: Boolean = true,
     onOptionSelected: (T?) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val optionsWithAny = listOf(null).plus(options)
+    val actualOptions = if (addAllOption) listOf(null).plus(options) else options
 
     Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
         Row(
@@ -38,7 +39,7 @@ fun <T : Displayable> FilterComponent(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            for (option in optionsWithAny) {
+            for (option in actualOptions) {
                 DropdownMenuItem(onClick = {
                     expanded = false
                     onOptionSelected(option)

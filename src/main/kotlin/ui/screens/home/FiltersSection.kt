@@ -12,16 +12,16 @@ import data.local.entities.CategoryType
 import data.local.entities.RunStatus
 import data.local.entities.Variable
 import data.local.entities.VariableAndValueIds
-import persistence.database.Filters
+import persistence.database.Settings
 import ui.utils.FlowRow
 
 @Composable
 fun FiltersSection(
-    uiState: HomeUIState.FiltersUIState,
-    onFiltersChanged: (Filters) -> Unit
+    uiState: HomeUIState.SettingsUIState,
+    onFiltersChanged: (Settings) -> Unit
 ) {
     when (uiState) {
-        is HomeUIState.FiltersUIState.LoadingFilters -> {
+        is HomeUIState.SettingsUIState.LoadingSettings -> {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -29,33 +29,33 @@ fun FiltersSection(
                 CircularProgressIndicator(modifier = Modifier.padding(vertical = 10.dp))
             }
         }
-        is HomeUIState.FiltersUIState.LoadedFilters -> {
-            FiltersRow(uiState, onFiltersChanged)
+        is HomeUIState.SettingsUIState.LoadedSettings -> {
+            FiltersContent(uiState, onFiltersChanged)
         }
     }
 }
 
 @Composable
-private fun FiltersRow(
-    uiState: HomeUIState.FiltersUIState.LoadedFilters,
-    onFiltersChanged: (Filters) -> Unit
+private fun FiltersContent(
+    uiState: HomeUIState.SettingsUIState.LoadedSettings,
+    onFiltersChanged: (Settings) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
         val gameVariables = uiState.game.categories.firstOrNull { it.type == CategoryType.PerGame }
             ?.variables?.filter { it.categoryId == null }
         val categories = uiState.game.categories.filter { it.type == CategoryType.PerGame }
-        val selectedCategory = categories.firstOrNull { it.categoryId == uiState.filters.categoryId }
+        val selectedCategory = categories.firstOrNull { it.categoryId == uiState.settings.categoryId }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+        FlowRow(horizontalGap = 24.dp) {
             // Category filter TODO add level support
-            FilterComponent(
+            SettingComponent(
                 title = "Category",
                 selectedOption = selectedCategory,
                 options = categories,
                 onOptionSelected = { newCategory ->
-                    onFiltersChanged(uiState.filters.copy(
+                    onFiltersChanged(uiState.settings.copy(
                         categoryId = newCategory?.categoryId,
-                        variablesAndValuesIds = uiState.filters.variablesAndValuesIds.toMutableList()
+                        variablesAndValuesIds = uiState.settings.variablesAndValuesIds.toMutableList()
                             .filter { filterVariable ->
                                 // When changing category only keep game variable filters
                                 gameVariables?.any { filterVariable.variableId == it.variableId } ?: false
@@ -65,12 +65,12 @@ private fun FiltersRow(
             )
             // Run status filter
             val runStatuses = RunStatus.values().toList()
-            val selectedRunStatus = uiState.filters.runStatus
-            FilterComponent(
+            val selectedRunStatus = uiState.settings.runStatus
+            SettingComponent(
                 title = "Status",
                 selectedOption = selectedRunStatus,
                 options = runStatuses,
-                onOptionSelected = { onFiltersChanged(uiState.filters.copy(runStatus = it)) }
+                onOptionSelected = { onFiltersChanged(uiState.settings.copy(runStatus = it)) }
             )
         }
 
@@ -78,7 +78,7 @@ private fun FiltersRow(
         if (!gameVariables.isNullOrEmpty()) {
             Column {
                 Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
-                VariablesFilters(gameVariables, uiState.filters, onFiltersChanged)
+                VariablesFilters(gameVariables, uiState.settings, onFiltersChanged)
             }
         }
 
@@ -88,7 +88,7 @@ private fun FiltersRow(
             if (!categoryVariables.isNullOrEmpty()) {
                 Column {
                     Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
-                    VariablesFilters(categoryVariables, uiState.filters, onFiltersChanged)
+                    VariablesFilters(categoryVariables, uiState.settings, onFiltersChanged)
                 }
             }
         }
@@ -98,8 +98,8 @@ private fun FiltersRow(
 @Composable
 private fun VariablesFilters(
     variables: List<Variable>,
-    filters: Filters,
-    onFiltersChanged: (Filters) -> Unit
+    filters: Settings,
+    onFiltersChanged: (Settings) -> Unit
 ) {
     // Pair the variable with its possible values and the selected one (if exists) on the filter
     val variableValuesAndSelectedList = variables.map { variable ->
@@ -119,7 +119,7 @@ private fun VariablesFilters(
         verticalGap = 8.dp,
     ) {
         for ((variable, values, selectedValue) in variableValuesAndSelectedList) {
-            FilterComponent(
+            SettingComponent(
                 title = "${variable.name}${if (variable.isSubCategory) "*" else ""}",
                 selectedOption = selectedValue,
                 options = values,

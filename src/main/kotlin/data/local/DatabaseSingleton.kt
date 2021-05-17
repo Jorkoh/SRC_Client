@@ -9,22 +9,22 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import persistence.database.DatabaseInstance
-import persistence.database.Filters
 import persistence.database.Game
+import persistence.database.Settings
 
-inline class FiltersId(val value: Long) {
+inline class SettingsId(val value: Long) {
     companion object {
         // can't override invoke and private constructor because sqldelight fails generation :(
-        val Default = FiltersId(1)
+        val Default = SettingsId(1)
     }
 }
 
-inline class GameId(val value: String){
-    companion object{
-        // Minecraft yo
-        val Default = GameId("j1npme6p")
+inline class GameId(val value: String) {
+    companion object {
+        val Default = GameId("j1npme6p") // Minecraft: Java Edition
     }
 }
+
 inline class CategoryId(val value: String)
 
 @Serializable
@@ -58,9 +58,9 @@ class DatabaseSingleton {
             override fun decode(databaseValue: String) = GameId(databaseValue)
             override fun encode(value: GameId) = value.value
         }
-        val filtersIdAdapter = object : ColumnAdapter<FiltersId, Long> {
-            override fun decode(databaseValue: Long) = FiltersId.Default
-            override fun encode(value: FiltersId) = value.value
+        val settingsIdAdapter = object : ColumnAdapter<SettingsId, Long> {
+            override fun decode(databaseValue: Long) = SettingsId.Default
+            override fun encode(value: SettingsId) = value.value
         }
         val categoryIdAdapter = object : ColumnAdapter<CategoryId, String> {
             override fun decode(databaseValue: String) = CategoryId(databaseValue)
@@ -76,11 +76,13 @@ class DatabaseSingleton {
             gameAdapter = Game.Adapter(
                 idAdapter = gameIdAdapter
             ),
-            filtersAdapter = Filters.Adapter(
-                idAdapter = filtersIdAdapter,
+            settingsAdapter = Settings.Adapter(
+                idAdapter = settingsIdAdapter,
                 runStatusAdapter = EnumColumnAdapter(),
                 categoryIdAdapter = categoryIdAdapter,
-                variablesAndValuesIdsAdapter = variablesAndValuesIdsAdapter
+                variablesAndValuesIdsAdapter = variablesAndValuesIdsAdapter,
+                runSortDiscriminatorAdapter = EnumColumnAdapter(),
+                runSortDirectionAdapter = EnumColumnAdapter()
             )
         )
     }
