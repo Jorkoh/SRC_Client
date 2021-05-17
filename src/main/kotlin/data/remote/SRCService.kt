@@ -30,7 +30,7 @@ interface SRCService {
         @Query("offset") offset : Int?,
         // Fixed query params
         @Query("_bulk") _bulk: Boolean = true,
-        @Query("max") max: Int = 1000
+        @Query("max") max: Int = PAGINATION_MAX_BULK_MODE
     ): PaginatedBulkGamesResponse
 
     // https://github.com/speedruncomorg/api/blob/master/version1/runs.md
@@ -44,11 +44,14 @@ interface SRCService {
         @Query("offset") offset : Int?,
         // Fixed query params
         @Query("embed") embed: String = "players",
-        @Query("max") max: Int = 200,
+        @Query("max") max: Int = PAGINATION_MAX,
     ): PaginatedRunsResponse
 
     companion object {
         private const val BASE_URL = "https://www.speedrun.com/api/v1/"
+        const val PAGINATION_MAX = 200
+        const val PAGINATION_MAX_BULK_MODE = 1000
+        const val PARALLEL_REQUESTS = 20
 
         fun create(): SRCService =
             Retrofit.Builder()

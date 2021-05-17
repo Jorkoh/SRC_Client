@@ -7,6 +7,9 @@ import data.remote.SRCService
 import data.remote.responses.RunResponse
 import data.remote.utils.RunSortParameters
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import persistence.database.Filters
@@ -49,18 +52,26 @@ class SRCRepository(
         sortingParams: RunSortParameters? = null
     ) = flow {
         val runs = mutableListOf<Run>()
-        var offset = 0
+        var currentOffset = 0
         do {
-            val response = srcService.fetchRuns(
-                gameId = gameId.value,
-                categoryId = filters.categoryId?.value,
-                status = filters.runStatus?.apiString,
-                orderBy = sortingParams?.discriminator?.apiString,
-                direction = sortingParams?.direction?.apiString,
-                offset = offset
-            ).apply {
-                offset += runResponses.size
-                val filteredRunResponses = runResponses.filter { response ->
+            val responses = coroutineScope {
+                val requests = Array(SRCService.PARALLEL_REQUESTS) { i ->
+                    async {
+                        srcService.fetchRuns(
+                            gameId = gameId.value,
+                            categoryId = filters.categoryId?.value,
+                            status = filters.runStatus?.apiString,
+                            orderBy = sortingParams?.discriminator?.apiString,
+                            direction = sortingParams?.direction?.apiString,
+                            offset = currentOffset + i * SRCService.PAGINATION_MAX
+                        )
+                    }
+                }
+                awaitAll(*requests)
+            }
+
+            responses.flatMap { it.runResponses }.apply {
+                val filteredRunResponses = filter { response ->
                     // A response needs to match all defined custom variable filters
                     filters.variablesAndValuesIds.all { (filterVariableId, filterValueId) ->
                         response.variablesAndValues.variablesAndValues.any { (responseVariableId, responseValueId) ->
@@ -70,7 +81,8 @@ class SRCRepository(
                 }
                 runs.addAll(filteredRunResponses.map(RunResponse::toRun))
             }
-        } while (response.pagination.size == response.pagination.max)
+            currentOffset += SRCService.PAGINATION_MAX * SRCService.PARALLEL_REQUESTS
+        } while (responses.none { it.pagination.size < it.pagination.max || it.pagination.size == 0 })
         emit(runs)
     }.flowOn(Dispatchers.IO)
 }
