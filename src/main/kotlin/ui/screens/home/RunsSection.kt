@@ -13,12 +13,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import data.local.entities.RegisteredUser
 import data.local.entities.Run
 import ui.screens.home.HomeUIState.RunsUIState.*
+import ui.utils.toFlagEmoji
+import ui.utils.toSRCString
 import java.awt.Desktop
 import java.net.URI
-import kotlin.math.roundToInt
-import kotlin.time.Duration
 
 @Composable
 fun RunsSection(uiState: HomeUIState.RunsUIState) {
@@ -76,19 +77,8 @@ private fun RunItem(position: Int, run: Run) {
     ) {
         Text(position.toString())
         Text(run.primaryTime.toSRCString())
-        Text(run.players.first().name)
+        val flagEmoji = (run.players.first() as? RegisteredUser)?.countryCode?.toFlagEmoji() ?: ""
+        Text("$flagEmoji ${run.players.first().name}")
         Text(run.runStatus.uiString)
     }
-}
-
-private fun Duration.toSRCString() = toComponents { hours, minutes, seconds, nanoseconds ->
-    // TODO added rounding because of some floating point weirdness with Duration, should be fixed properly
-    val milliseconds = (nanoseconds / 1000000.0).roundToInt()
-
-    StringBuilder()
-        .append(if (hours != 0) "${hours}h " else "")
-        .append(if (minutes != 0) "${minutes}m " else "")
-        .append(if (seconds != 0) "${seconds}s " else "")
-        .append(if (milliseconds != 0) "${milliseconds}ms" else "")
-        .toString()
 }

@@ -49,8 +49,6 @@ private fun HomeScreenContent(
         GameDialog(onDismiss = onChangeGameDialogDismissed)
     }
 
-    val logger = KotlinLogging.logger {}
-
     BackdropScaffold(
         scaffoldState = scaffoldState,
         gesturesEnabled = false,
