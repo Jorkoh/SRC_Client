@@ -15,8 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import data.local.entities.RegisteredUser
 import data.local.entities.Run
+import data.local.entities.User
+import io.kamel.image.KamelImage
+import io.kamel.image.lazyImageResource
 import ui.screens.home.HomeUIState.RunsUIState.*
-import ui.utils.toFlagEmoji
 import ui.utils.toSRCString
 import java.awt.Desktop
 import java.net.URI
@@ -77,8 +79,28 @@ private fun RunItem(position: Int, run: Run) {
     ) {
         Text(position.toString())
         Text(run.primaryTime.toSRCString())
-        val flagEmoji = (run.players.first() as? RegisteredUser)?.countryCode?.toFlagEmoji() ?: ""
-        Text("$flagEmoji ${run.players.first().name}")
+        RunnerName(run.players)
         Text(run.runStatus.uiString)
+    }
+}
+
+@Composable
+private fun RunnerName(players: List<User>) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        (players.first() as? RegisteredUser)?.countryCode?.let {
+            KamelImage(
+                resource = lazyImageResource(data = "https://www.speedrun.com/images/flags/$it.png"),
+                contentDescription = "Country",
+                crossfade = true,
+                modifier = Modifier.height(12.dp)
+            )
+        }
+        Spacer(Modifier.width(4.dp))
+        val coopIndicator = when (players.size) {
+            1 -> ""
+            2 -> " and 1 other"
+            else -> " and ${players.size - 1} others"
+        }
+        Text("${players.first().name}${coopIndicator}")
     }
 }

@@ -9,7 +9,6 @@ import androidx.compose.ui.res.vectorXmlResource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import mu.KotlinLogging
 import persistence.database.Settings
 import ui.screens.game.GameDialog
 import ui.theme.offWhite
