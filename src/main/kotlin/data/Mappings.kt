@@ -21,7 +21,7 @@ fun FullGameResponse.toFullGame() = FullGame(
     requireVideo = ruleset.requireVideo,
     emulatorsAllowed = ruleset.emulatorsAllowed,
     timingMethods = ruleset.runTimes,
-    defaultTimingMethod = ruleset.defaultTimingMethod,
+    primaryTimingMethod = ruleset.defaultTimingMethod,
     isROMHack = isROMHack,
     gameTypeIds = gameTypeIds.map(::GameTypeId),
     platformIds = platformIds.map(::PlatformId),
@@ -74,7 +74,7 @@ fun RunResponse.toRun() = Run(
     gameId = GameId(gameId),
     categoryId = CategoryId(categoryId),
     levelId = levelId?.let(::LevelId),
-    variablesAndValues = variablesAndValues.variablesAndValues.map {
+    variablesAndValuesIds = variablesAndValues.variablesAndValues.map {
         VariableAndValueIds(VariableId(it.variableId), ValueId(it.valueId))
     },
     isEmulated = system.emulated,

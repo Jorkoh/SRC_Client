@@ -5,11 +5,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.res.vectorXmlResource
 
 @Composable
 fun <T : Displayable> SettingComponent(
@@ -33,7 +34,7 @@ fun <T : Displayable> SettingComponent(
                 text = "$title: ${selectedOption?.uiString ?: "All"}",
                 style = MaterialTheme.typography.subtitle1
             )
-            Icon(imageVector = vectorXmlResource("ic_expand.xml"), contentDescription = null)
+            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
         }
         DropdownMenu(
             expanded = expanded,

@@ -80,13 +80,13 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
 
     private fun refreshRuns() {
         runsQueryJob?.cancel()
-        (homeUIState.value.settingsUIState as? HomeUIState.SettingsUIState.LoadedSettings)?.settings?.let { settings ->
+        (homeUIState.value.settingsUIState as? HomeUIState.SettingsUIState.LoadedSettings)?.let { loadedSettings ->
             setRunsUIState(HomeUIState.RunsUIState.LoadingRuns)
             runsQueryJob = scope.launch {
                 val runs = srcRepository.getCachedRuns(
-                    settings = settings
+                    settings = loadedSettings.settings
                 )
-                setRunsUIState(HomeUIState.RunsUIState.LoadedRuns(runs))
+                setRunsUIState(HomeUIState.RunsUIState.LoadedRuns(runs, loadedSettings.game))
             }
         }
     }
@@ -172,7 +172,7 @@ sealed class HomeUIState(
 
     sealed class RunsUIState {
         object LoadingRuns : RunsUIState()
-        class LoadedRuns(val runs: List<Run> = emptyList()) : RunsUIState()
+        class LoadedRuns(val runs: List<Run> = emptyList(), val game: FullGame) : RunsUIState()
         class FailedToLoadRuns(val message: String) : RunsUIState()
     }
 }

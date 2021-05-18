@@ -20,7 +20,7 @@ data class Run(
     val gameId: GameId,
     val categoryId: CategoryId,
     val levelId: LevelId?,
-    val variablesAndValues: List<VariableAndValueIds>,
+    val variablesAndValuesIds: List<VariableAndValueIds>,
 
     val isEmulated : Boolean,
     val platformId : PlatformId?,

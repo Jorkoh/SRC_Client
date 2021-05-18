@@ -1,12 +1,13 @@
 package data.local.entities
 
 import data.local.*
+import ui.screens.home.Displayable
 import java.util.*
 
-enum class TimingMethod(val apiString: String) {
-    RealTime("realtime"),
-    RealTimeNoLoads("realtime_noloads"),
-    InGame("ingame")
+enum class TimingMethod(val apiString: String, override val uiString: String) : Displayable {
+    RealTime("realtime", "RTA"),
+    RealTimeNoLoads("realtime_noloads", "RTA-NL"),
+    InGame("ingame", "IGT")
 }
 
 // TODO look into supporting levels https://github.com/speedruncomorg/api/blob/master/version1/levels.md
@@ -23,7 +24,7 @@ data class FullGame(
     val requireVideo: Boolean,
     val emulatorsAllowed: Boolean,
     val timingMethods: List<TimingMethod>,
-    val defaultTimingMethod: TimingMethod,
+    val primaryTimingMethod: TimingMethod,
     val isROMHack: Boolean,
 
     val gameTypeIds: List<GameTypeId>,
@@ -35,7 +36,7 @@ data class FullGame(
     val publisherIds: List<PublisherId>,
 
     val moderators: List<User>,
-    val categories : List<Category>,
+    val categories: List<Category>,
 
     val weblink: String
 )

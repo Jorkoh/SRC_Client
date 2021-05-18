@@ -122,7 +122,7 @@ class SRCRepository(
     }
 
     private fun List<VariableAndValueIds>.filter(run: Run) = all { (filterVariableId, filterValueId) ->
-        run.variablesAndValues.any { (runVariableId, runValueId) ->
+        run.variablesAndValuesIds.any { (runVariableId, runValueId) ->
             runVariableId == filterVariableId && runValueId == filterValueId
         }
     }
