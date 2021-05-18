@@ -7,5 +7,6 @@ object CustomColors {
 
     val approveGreen = Color(0xFF388E3C)
     val rejectRed = Color(0xFFD32F2F)
+    val pendingBlue = Color(0xFF2F86D3)
 }
 

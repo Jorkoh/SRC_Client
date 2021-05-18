@@ -80,7 +80,7 @@ fun RunResponse.toRun() = Run(
     isEmulated = system.emulated,
     platformId = system.platformId?.let(::PlatformId),
     regionId = system.regionId?.let(::RegionId),
-    runStatus = status. value,
+    runStatus = status.value,
     verifierId = status.verifierId?.let(::UserId),
     verificationDate = status.verificationDate,
     players = players.players.map(PlayerResponse::toUser),
@@ -97,7 +97,15 @@ fun RunResponse.toRun() = Run(
 )
 
 fun PlayerResponse.toUser() = when (this) {
-    is GuestResponse -> Guest(name)
+    is GuestResponse -> {
+        name.split(']').let { parts ->
+            if (parts.size == 2) {
+                Guest(name = parts[1], countryCode = parts[0].drop(1))
+            } else {
+                Guest(name = name, countryCode = null)
+            }
+        }
+    }
     is UserResponse -> RegisteredUser(
         userId = UserId(playerId),
         name = names.international,

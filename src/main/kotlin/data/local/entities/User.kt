@@ -13,16 +13,18 @@ enum class Role(val apiString: String) {
 
 interface User{
     val name : String
+    val countryCode : String?
 }
 
 data class RegisteredUser(
     val userId: UserId,
     override val name: String,
     val role: Role?,
-    val countryCode : String?,
+    override val countryCode : String?,
     val weblink : String,
 ) : User
 
 data class Guest(
     override val name: String,
+    override val countryCode : String?,
 ) : User

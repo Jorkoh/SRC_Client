@@ -33,3 +33,6 @@ val Colors.approveGreen: Color
 
 val Colors.rejectRed: Color
     get() = CustomColors.rejectRed
+
+val Colors.pendingBlue: Color
+    get() = CustomColors.pendingBlue
