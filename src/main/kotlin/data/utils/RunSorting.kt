@@ -1,4 +1,4 @@
-package data.local.entities.utils
+package data.utils
 
 import ui.screens.home.Displayable
 

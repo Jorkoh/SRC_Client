@@ -80,6 +80,7 @@ class DatabaseSingleton {
                 idAdapter = settingsIdAdapter,
                 runStatusAdapter = EnumColumnAdapter(),
                 categoryIdAdapter = categoryIdAdapter,
+                leaderboardStyleAdapter = EnumColumnAdapter(),
                 variablesAndValuesIdsAdapter = variablesAndValuesIdsAdapter,
                 runSortDiscriminatorAdapter = EnumColumnAdapter(),
                 runSortDirectionAdapter = EnumColumnAdapter()

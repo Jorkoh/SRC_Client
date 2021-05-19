@@ -1,19 +1,20 @@
 package ui.screens.home
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import data.local.entities.CategoryType
-import data.local.entities.RunStatus
-import data.local.entities.Variable
-import data.local.entities.VariableAndValueIds
-import data.local.entities.utils.RunSortDirection
-import data.local.entities.utils.RunSortDiscriminator
+import data.local.entities.*
+import data.utils.LeaderboardStyle
+import data.utils.RunSortDirection
+import data.utils.RunSortDiscriminator
 import persistence.database.Settings
 import ui.utils.FlowRow
 
@@ -48,33 +49,14 @@ private fun FiltersContent(
         val categories = uiState.game.categories.filter { it.type == CategoryType.PerGame }
         val selectedCategory = categories.firstOrNull { it.categoryId == uiState.settings.categoryId }
 
-        FlowRow(horizontalGap = 24.dp) {
-            // Category filter TODO add level support
-            SettingComponent(
-                title = "Category",
-                selectedOption = selectedCategory,
-                options = categories,
-                onOptionSelected = { newCategory ->
-                    onFiltersChanged(uiState.settings.copy(
-                        categoryId = newCategory?.categoryId,
-                        variablesAndValuesIds = uiState.settings.variablesAndValuesIds.toMutableList()
-                            .filter { filterVariable ->
-                                // When changing category only keep game variable filters
-                                gameVariables?.any { filterVariable.variableId == it.variableId } ?: false
-                            }
-                    ))
-                }
-            )
-            // Run status filter
-            val runStatuses = RunStatus.values().toList()
-            val selectedRunStatus = uiState.settings.runStatus
-            SettingComponent(
-                title = "Status",
-                selectedOption = selectedRunStatus,
-                options = runStatuses,
-                onOptionSelected = { onFiltersChanged(uiState.settings.copy(runStatus = it)) }
-            )
-        }
+        // Category, run status, "leaderboard" view
+        GlobalFilters(
+            categories = categories,
+            selectedCategory = selectedCategory,
+            gameVariables = gameVariables,
+            settings = uiState.settings,
+            onFiltersChanged = onFiltersChanged
+        )
 
         // Custom leaderboard variables filters from game TODO add level support
         if (!gameVariables.isNullOrEmpty()) {
@@ -95,31 +77,56 @@ private fun FiltersContent(
 
         // Sorting
         Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
-        FlowRow(horizontalGap = 24.dp) {
-            val runSortDiscriminators = RunSortDiscriminator.values().toList()
-            val selectedRunSortDiscriminator = uiState.settings.runSortDiscriminator
-            SettingComponent(
-                title = "Sort by",
-                selectedOption = selectedRunSortDiscriminator,
-                options = runSortDiscriminators,
-                addAllOption = false,
-                onOptionSelected = {
-                    onFiltersChanged(uiState.settings.copy(runSortDiscriminator = it ?: RunSortDiscriminator.Default))
-                }
-            )
+        SortingComponent(uiState.settings, onFiltersChanged)
+    }
+}
 
-            val runSortDirections = RunSortDirection.values().toList()
-            val selectedRunSortDirection = uiState.settings.runSortDirection
-            SettingComponent(
-                title = "Direction",
-                selectedOption = selectedRunSortDirection,
-                options = runSortDirections,
-                addAllOption = false,
-                onOptionSelected = {
-                    onFiltersChanged(uiState.settings.copy(runSortDirection = it ?: RunSortDirection.Default))
-                }
-            )
-        }
+@Composable
+private fun GlobalFilters(
+    categories: List<Category>,
+    selectedCategory: Category?,
+    gameVariables: List<Variable>?,
+    settings: Settings,
+    onFiltersChanged: (Settings) -> Unit
+) {
+    FlowRow(horizontalGap = 24.dp) {
+        // Category filter TODO add level support
+        SettingComponent(
+            title = "Category",
+            selectedOption = selectedCategory,
+            options = categories,
+            onOptionSelected = { newCategory ->
+                onFiltersChanged(settings.copy(
+                    categoryId = newCategory?.categoryId,
+                    variablesAndValuesIds = settings.variablesAndValuesIds.toMutableList()
+                        .filter { filterVariable ->
+                            // When changing category only keep game variable filters TODO is this its best place?
+                            gameVariables?.any { filterVariable.variableId == it.variableId } ?: false
+                        }
+                ))
+            }
+        )
+
+        // Run status filter
+        val runStatuses = RunStatus.values().toList()
+        val selectedRunStatus = settings.runStatus
+        SettingComponent(
+            title = "Status",
+            selectedOption = selectedRunStatus,
+            options = runStatuses,
+            onOptionSelected = { onFiltersChanged(settings.copy(runStatus = it)) }
+        )
+
+        // Display one run per player thingy
+        val leaderboardStyles = LeaderboardStyle.values().toList()
+        val selectedLeaderboardStyle = settings.leaderboardStyle
+        SettingComponent(
+            title = "One run per player",
+            selectedOption = selectedLeaderboardStyle,
+            options = leaderboardStyles,
+            addAllOption = false,
+            onOptionSelected = { onFiltersChanged(settings.copy(leaderboardStyle = it ?: LeaderboardStyle.Default)) }
+        )
     }
 }
 
@@ -161,5 +168,37 @@ private fun VariablesFilters(
                 }
             )
         }
+    }
+}
+
+@Composable
+private fun SortingComponent(
+    settings: Settings,
+    onSortingChanged: (Settings) -> Unit
+) {
+    FlowRow(horizontalGap = 24.dp) {
+        val runSortDiscriminators = RunSortDiscriminator.values().toList()
+        val selectedRunSortDiscriminator = settings.runSortDiscriminator
+        SettingComponent(
+            title = "Sort by",
+            selectedOption = selectedRunSortDiscriminator,
+            options = runSortDiscriminators,
+            addAllOption = false,
+            onOptionSelected = {
+                onSortingChanged(settings.copy(runSortDiscriminator = it ?: RunSortDiscriminator.Default))
+            }
+        )
+
+        val runSortDirections = RunSortDirection.values().toList()
+        val selectedRunSortDirection = settings.runSortDirection
+        SettingComponent(
+            title = "Direction",
+            selectedOption = selectedRunSortDirection,
+            options = runSortDirections,
+            addAllOption = false,
+            onOptionSelected = {
+                onSortingChanged(settings.copy(runSortDirection = it ?: RunSortDirection.Default))
+            }
+        )
     }
 }

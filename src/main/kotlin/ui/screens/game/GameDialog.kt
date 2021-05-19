@@ -85,8 +85,7 @@ private fun GameDialogContent(
                 Spacer(Modifier.height(16.dp))
                 GameDialogButtons(
                     onDismiss = onDismiss,
-                    onSave = onSave,
-                    saveEnabled = selectedGame.value != null
+                    onSave = onSave
                 )
             }
         }
@@ -96,8 +95,7 @@ private fun GameDialogContent(
 @Composable
 private fun GameDialogButtons(
     onDismiss: () -> Unit,
-    onSave: () -> Unit,
-    saveEnabled: Boolean
+    onSave: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -115,7 +113,6 @@ private fun GameDialogButtons(
         Spacer(Modifier.width(16.dp))
         TextButton(
             onClick = onSave,
-            enabled = saveEnabled,
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = MaterialTheme.colors.approveGreen,
                 contentColor = MaterialTheme.colors.onPrimary
@@ -170,7 +167,6 @@ fun GameSelectorSearchField(
 ) {
     OutlinedTextField(
         value = if (uiState.value is GameSelectorUIState.NotSearching) {
-//            selectedGame.value?.name ?: ""
             selectedGame.value.name
         } else {
             uiState.value.query
@@ -187,12 +183,6 @@ fun GameSelectorSearchField(
             }
             setSearchFieldIsFocused(newFocusState == FocusState.Active)
         }.fillMaxWidth(),
-//        isError = uiState.value is GameSelectorUIState.NotSearching && selectedGame.value == null,
-//        trailingIcon = {
-//            if (uiState.value is GameSelectorUIState.NotSearching && selectedGame.value == null) {
-//                Icon(Icons.Default.Warning, null)
-//            }
-//        }
     )
 }
 

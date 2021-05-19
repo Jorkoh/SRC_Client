@@ -2,15 +2,14 @@ package data
 
 import data.local.GameId
 import data.local.GamesDAO
-import data.local.entities.Run
-import data.local.entities.RunStatus
-import data.local.entities.VariableAndValueIds
-import data.local.entities.utils.RunSortDirection
-import data.local.entities.utils.RunSortDiscriminator
-import data.local.entities.utils.RunSortParameters
+import data.local.entities.*
 import data.remote.SRCService
 import data.remote.responses.GameResponse
 import data.remote.responses.RunResponse
+import data.utils.LeaderboardStyle
+import data.utils.RunSortDirection
+import data.utils.RunSortDiscriminator
+import data.utils.RunSortParameters
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -112,6 +111,22 @@ class SRCRepository(
                     RunSortDirection.Descending -> -1
                 }
             )
+        }.run {
+            if (settings.leaderboardStyle == LeaderboardStyle.Yes) {
+                /*
+                This eats runs with no players which is ok. It also eats runs where a guest
+                has the name of a user id. Don't think that's a real problem tho
+                 */
+                distinctBy {
+                    when (val player = it.players.firstOrNull()) {
+                        is RegisteredUser -> player.userId
+                        is Guest -> player.name
+                        else -> null
+                    }
+                }
+            } else {
+                this
+            }
         }
     }
 

@@ -7,8 +7,9 @@ import data.local.SettingsDAO
 import data.local.SettingsId
 import data.local.entities.FullGame
 import data.local.entities.Run
-import data.local.entities.utils.RunSortDirection
-import data.local.entities.utils.RunSortDiscriminator
+import data.utils.LeaderboardStyle
+import data.utils.RunSortDirection
+import data.utils.RunSortDiscriminator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -162,6 +163,7 @@ sealed class HomeUIState(
                 id = SettingsId.Default,
                 runStatus = null,
                 categoryId = null,
+                leaderboardStyle = LeaderboardStyle.Default,
                 variablesAndValuesIds = emptyList(),
                 runSortDiscriminator = RunSortDiscriminator.Default,
                 runSortDirection = RunSortDirection.Default

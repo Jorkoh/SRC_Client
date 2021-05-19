@@ -100,7 +100,7 @@ private fun RunItem(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 RunTime(run, game.primaryTimingMethod)
-                RunnerName(run.players)
+                PlayerName(run.players)
                 run.runDate?.let {
                     RunDate(it, dateFormat)
                 }
@@ -159,7 +159,7 @@ private fun CategoryAndVariables(run: Run, categories: List<Category>) {
 }
 
 @Composable
-private fun RunnerName(
+private fun PlayerName(
     players: List<User>
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {

@@ -1,16 +1,18 @@
 import data.local.CategoryId;
-import data.local.SettingsId;
 import data.local.GameId;
+import data.local.SettingsId;
 import data.local.entities.RunStatus;
 import data.local.entities.VariableAndValueIds;
-import data.local.entities.utils.RunSortDirection;
-import data.local.entities.utils.RunSortDiscriminator;
+import data.utils.LeaderboardStyle;
+import data.utils.RunSortDirection;
+import data.utils.RunSortDiscriminator;
 import kotlin.collections.List;
 
 CREATE TABLE settings (
     id INTEGER AS SettingsId PRIMARY KEY,
     runStatus TEXT AS RunStatus,
     categoryId TEXT AS CategoryId,
+    leaderboardStyle TEXT AS LeaderboardStyle NOT NULL,
     variablesAndValuesIds TEXT AS List<VariableAndValueIds> NOT NULL,
     runSortDiscriminator TEXT AS RunSortDiscriminator NOT NULL,
     runSortDirection TEXT AS RunSortDirection NOT NULL
@@ -23,8 +25,8 @@ CREATE TABLE game (
     isSelected INTEGER AS Boolean NOT NULL DEFAULT 0
 );
 
-INSERT INTO settings (id, runStatus, categoryId, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
-VALUES (1, NULL, NULL, "[]", "SubmissionDate", "Ascending");
+INSERT INTO settings (id, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
+VALUES (1, NULL, NULL, "No", "[]", "SubmissionDate", "Ascending");
 
 getSelectedGame:
 SELECT *
@@ -47,7 +49,7 @@ FROM settings
 LIMIT 1;
 
 updateSettings:
-INSERT OR REPLACE INTO settings (id, runStatus, categoryId, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
+INSERT OR REPLACE INTO settings (id, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
 VALUES ?;
 
 resetGameSpecificSettings:
