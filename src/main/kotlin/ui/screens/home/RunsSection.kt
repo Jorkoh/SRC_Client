@@ -67,8 +67,7 @@ private fun RunList(runs: List<Run>, game: FullGame) {
             adapter = rememberScrollbarAdapter(
                 scrollState = listState,
                 itemCount = runs.size,
-                // TODO update this size
-                averageItemSize = 37.dp // Item height plus vertical spacing times two
+                averageItemSize = 60.dp
             )
         )
     }
@@ -88,7 +87,6 @@ private fun RunItem(
             .fillMaxWidth()
             .height(60.dp)
             .padding(top = 8.dp, bottom = 8.dp, start = 16.dp, end = 16.dp)
-//            .background(Color.Red)
     ) {
         Text(text = position.toString(), style = MaterialTheme.typography.h6)
         Spacer(Modifier.width(16.dp))
@@ -96,9 +94,16 @@ private fun RunItem(
             verticalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier.weight(1f).fillMaxHeight()
         ) {
-            Row {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 RunTime(run, game.primaryTimingMethod)
-                RunnerNameAndDate(run.players, run.runDate, dateFormat)
+                RunnerName(run.players)
+                run.runDate?.let {
+                    RunDate(it, dateFormat)
+                }
             }
             CategoryAndVariables(run, game.categories)
         }
@@ -125,34 +130,37 @@ private fun RunTime(
         TimingMethod.RealTimeNoLoads -> run.realTimeNoLoads
         TimingMethod.InGame -> run.inGameTime
     }.toSRCString()
-    Text("${primaryTimingMethod.uiString}: $timeSRCString")
-    Spacer(Modifier.width(8.dp))
+    Text("${primaryTimingMethod.uiString} $timeSRCString")
 }
 
 @Composable
 private fun CategoryAndVariables(run: Run, categories: List<Category>) {
-    val category = categories.first { it.categoryId == run.categoryId }
-    val valueLabels = run.variablesAndValuesIds.map { runVariableAndValues ->
-        val variable = category.variables.first {
-            it.variableId == runVariableAndValues.variableId
-        }
-        val value = variable.values.first {
-            it.valueId == runVariableAndValues.valueId
-        }
-        Pair(variable, value)
-    }.sortedByDescending { it.first.isSubCategory }.map { it.second.label }
+    val category = categories.firstOrNull { it.categoryId == run.categoryId }
+
+    val categoryAndVariablesString = if (category != null) {
+        val valueLabels = run.variablesAndValuesIds.map { runVariableAndValues ->
+            val variable = category.variables.first {
+                it.variableId == runVariableAndValues.variableId
+            }
+            val value = variable.values.first {
+                it.valueId == runVariableAndValues.valueId
+            }
+            Pair(variable, value)
+        }.sortedByDescending { it.first.isSubCategory }.map { it.second.label }
+        "${category.name} - ${valueLabels.joinToString()}"
+    } else {
+        "Category not part of game categories"
+    }
     Text(
-        text = "${category.name} - ${valueLabels.joinToString()}",
+        text = categoryAndVariablesString,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
     )
 }
 
 @Composable
-private fun RunnerNameAndDate(
-    players: List<User>,
-    runDate: Date?,
-    dateFormat: SimpleDateFormat
+private fun RunnerName(
+    players: List<User>
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         val playerName = players.firstOrNull()?.name ?: "No players"
@@ -161,7 +169,6 @@ private fun RunnerNameAndDate(
             2 -> " and 1 other"
             else -> " and ${players.size - 1} others"
         }
-        val dateString = if (runDate != null) " (${dateFormat.format(runDate)})" else ""
 
         players.firstOrNull()?.countryCode?.let {
             KamelImage(
@@ -172,8 +179,16 @@ private fun RunnerNameAndDate(
             )
         }
         Spacer(Modifier.width(4.dp))
-        Text("$playerName$playerCountIndicator$dateString")
+        Text("$playerName$playerCountIndicator")
     }
+}
+
+@Composable
+private fun RunDate(
+    runDate: Date,
+    dateFormat: SimpleDateFormat
+) {
+    Text(dateFormat.format(runDate))
 }
 
 @Composable
