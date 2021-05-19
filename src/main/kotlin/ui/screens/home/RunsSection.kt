@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,6 +24,8 @@ import ui.theme.rejectRed
 import ui.utils.toSRCString
 import java.awt.Desktop
 import java.net.URI
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun RunsSection(uiState: HomeUIState.RunsUIState) {
@@ -48,6 +51,7 @@ fun RunsSection(uiState: HomeUIState.RunsUIState) {
 @Composable
 private fun RunList(runs: List<Run>, game: FullGame) {
     val listState = rememberLazyListState()
+    val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd") }
 
     Box {
         LazyColumn(
@@ -55,7 +59,7 @@ private fun RunList(runs: List<Run>, game: FullGame) {
             modifier = Modifier.fillMaxWidth()
         ) {
             itemsIndexed(runs) { index, run ->
-                RunItem(index + 1, run, game)
+                RunItem(index + 1, run, game, dateFormat)
             }
         }
         VerticalScrollbar(
@@ -71,30 +75,38 @@ private fun RunList(runs: List<Run>, game: FullGame) {
 }
 
 @Composable
-private fun RunItem(position: Int, run: Run, game: FullGame) {
+private fun RunItem(
+    position: Int,
+    run: Run,
+    game: FullGame,
+    dateFormat: SimpleDateFormat
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
+            .height(60.dp)
             .padding(top = 8.dp, bottom = 8.dp, start = 16.dp, end = 16.dp)
+//            .background(Color.Red)
     ) {
         Text(text = position.toString(), style = MaterialTheme.typography.h6)
         Spacer(Modifier.width(16.dp))
         Column(
-            verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.weight(1f)
+            verticalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.weight(1f).fillMaxHeight()
         ) {
             Row {
-                RunTimes(run, game.primaryTimingMethod, game.timingMethods)
-                RunnerName(run.players)
+                RunTime(run, game.primaryTimingMethod)
+                RunnerNameAndDate(run.players, run.runDate, dateFormat)
             }
             CategoryAndVariables(run, game.categories)
         }
         Spacer(Modifier.width(16.dp))
         Column(
             verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.End
+            horizontalAlignment = Alignment.End,
+            modifier = Modifier.fillMaxHeight()
         ) {
             SRCButton(run.weblink)
             RunStatusIndicator(run.runStatus)
@@ -103,22 +115,18 @@ private fun RunItem(position: Int, run: Run, game: FullGame) {
 }
 
 @Composable
-private fun RunTimes(
+private fun RunTime(
     run: Run,
-    primaryTimingMethod: TimingMethod,
-    timingMethods: List<TimingMethod>
+    primaryTimingMethod: TimingMethod
 ) {
-    timingMethods.sortedByDescending { it == primaryTimingMethod }.forEach { method ->
-        // TODO this API mess should have been fixed in the response mapping
-        when (method) {
-            TimingMethod.RealTime -> run.realTime
-            TimingMethod.RealTimeNoLoads -> run.realTimeNoLoads
-            TimingMethod.InGame -> run.inGameTime
-        }?.let {
-            Text("${method.uiString}: ${it.toSRCString()}")
-            Spacer(Modifier.width(8.dp))
-        }
-    }
+    // TODO this API mess should have been fixed in the response mapping
+    val timeSRCString = when (primaryTimingMethod) {
+        TimingMethod.RealTime -> run.realTime
+        TimingMethod.RealTimeNoLoads -> run.realTimeNoLoads
+        TimingMethod.InGame -> run.inGameTime
+    }.toSRCString()
+    Text("${primaryTimingMethod.uiString}: $timeSRCString")
+    Spacer(Modifier.width(8.dp))
 }
 
 @Composable
@@ -141,8 +149,20 @@ private fun CategoryAndVariables(run: Run, categories: List<Category>) {
 }
 
 @Composable
-private fun RunnerName(players: List<User>) {
+private fun RunnerNameAndDate(
+    players: List<User>,
+    runDate: Date?,
+    dateFormat: SimpleDateFormat
+) {
     Row(verticalAlignment = Alignment.CenterVertically) {
+        val playerName = players.firstOrNull()?.name ?: "No players"
+        val playerCountIndicator = when (players.size) {
+            0, 1 -> ""
+            2 -> " and 1 other"
+            else -> " and ${players.size - 1} others"
+        }
+        val dateString = if (runDate != null) " (${dateFormat.format(runDate)})" else ""
+
         players.firstOrNull()?.countryCode?.let {
             KamelImage(
                 resource = lazyImageResource(data = "https://www.speedrun.com/images/flags/$it.png"),
@@ -152,13 +172,7 @@ private fun RunnerName(players: List<User>) {
             )
         }
         Spacer(Modifier.width(4.dp))
-        val playerCountIndicator = when (players.size) {
-            0 -> "No players"
-            1 -> ""
-            2 -> " and 1 other"
-            else -> " and ${players.size - 1} others"
-        }
-        Text("${players.firstOrNull()?.name ?: ""}${playerCountIndicator}")
+        Text("$playerName$playerCountIndicator$dateString")
     }
 }
 

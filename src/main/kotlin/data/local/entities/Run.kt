@@ -36,9 +36,9 @@ data class Run(
     val verificationDate: Date?,
 
     val primaryTime: Duration,
-    val realTime: Duration?,
-    val realTimeNoLoads: Duration?,
-    val inGameTime: Duration?,
+    val realTime: Duration,
+    val realTimeNoLoads: Duration,
+    val inGameTime: Duration,
 
     val comment: String?,
     val videoText: String?,

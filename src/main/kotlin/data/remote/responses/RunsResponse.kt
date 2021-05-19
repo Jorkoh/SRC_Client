@@ -87,15 +87,15 @@ data class Times(
     @Json(name = "realtime")
     val realTime: String?,
     @Json(name = "realtime_t")
-    val realTimeSeconds: Double?,
+    val realTimeSeconds: Double,
     @Json(name = "realtime_noloads")
     val realTimeNoLoads: String?,
     @Json(name = "realtime_noloads_t")
-    val realTimeNoLoadsSeconds: Double?,
+    val realTimeNoLoadsSeconds: Double,
     @Json(name = "ingame")
     val inGame: String?,
     @Json(name = "ingame_t")
-    val inGameSeconds: Double?,
+    val inGameSeconds: Double,
 )
 
 data class VariablesAndValuesResponses(
