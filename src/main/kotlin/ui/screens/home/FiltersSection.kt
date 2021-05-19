@@ -12,6 +12,8 @@ import data.local.entities.CategoryType
 import data.local.entities.RunStatus
 import data.local.entities.Variable
 import data.local.entities.VariableAndValueIds
+import data.local.entities.utils.RunSortDirection
+import data.local.entities.utils.RunSortDiscriminator
 import persistence.database.Settings
 import ui.utils.FlowRow
 
@@ -76,10 +78,8 @@ private fun FiltersContent(
 
         // Custom leaderboard variables filters from game TODO add level support
         if (!gameVariables.isNullOrEmpty()) {
-            Column {
-                Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
-                VariablesFilters(gameVariables, uiState.settings, onFiltersChanged)
-            }
+            Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
+            VariablesFilters(gameVariables, uiState.settings, onFiltersChanged)
         }
 
         // Custom leaderboard variables filters from selected category
@@ -91,6 +91,34 @@ private fun FiltersContent(
                     VariablesFilters(categoryVariables, uiState.settings, onFiltersChanged)
                 }
             }
+        }
+
+        // Sorting
+        Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
+        FlowRow(horizontalGap = 24.dp) {
+            val runSortDiscriminators = RunSortDiscriminator.values().toList()
+            val selectedRunSortDiscriminator = uiState.settings.runSortDiscriminator
+            SettingComponent(
+                title = "Sort by",
+                selectedOption = selectedRunSortDiscriminator,
+                options = runSortDiscriminators,
+                addAllOption = false,
+                onOptionSelected = {
+                    onFiltersChanged(uiState.settings.copy(runSortDiscriminator = it ?: RunSortDiscriminator.Default))
+                }
+            )
+
+            val runSortDirections = RunSortDirection.values().toList()
+            val selectedRunSortDirection = uiState.settings.runSortDirection
+            SettingComponent(
+                title = "Direction",
+                selectedOption = selectedRunSortDirection,
+                options = runSortDirections,
+                addAllOption = false,
+                onOptionSelected = {
+                    onFiltersChanged(uiState.settings.copy(runSortDirection = it ?: RunSortDirection.Default))
+                }
+            )
         }
     }
 }

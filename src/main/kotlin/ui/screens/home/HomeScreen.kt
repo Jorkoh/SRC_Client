@@ -7,7 +7,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.vectorXmlResource
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import persistence.database.Settings
 import ui.screens.game.GameDialog
@@ -28,10 +27,6 @@ fun HomeScreen() {
     )
 }
 
-enum class BackdropSection {
-    Filters, Sort
-}
-
 @Composable
 private fun HomeScreenContent(
     uiState: State<HomeUIState>,
@@ -42,7 +37,6 @@ private fun HomeScreenContent(
     onSettingsChanged: (Settings) -> Unit,
 ) {
     val scaffoldState = rememberBackdropScaffoldState(BackdropValue.Concealed)
-    var backdropSection by remember { mutableStateOf(BackdropSection.Filters) }
 
     if (uiState.value.gameSelectorIsOpen) {
         GameDialog(onDismiss = onChangeGameDialogDismissed)
@@ -66,49 +60,17 @@ private fun HomeScreenContent(
                 },
                 onFiltersButtonClicked = {
                     scope.launch {
-                        with(scaffoldState) {
-                            if (backdropSection != BackdropSection.Filters) {
-                                conceal()
-                                backdropSection = BackdropSection.Filters
-                                // TODO this delay lets the backdrop layout so the reveal animation actually works :/
-                                delay(40)
-                                reveal()
-                            } else {
-                                if (targetValue == BackdropValue.Concealed) reveal() else conceal()
-                            }
-                        }
-                    }
-                },
-                onSortButtonClicked = {
-                    scope.launch {
-                        with(scaffoldState) {
-                            if (backdropSection != BackdropSection.Sort) {
-                                conceal()
-                                backdropSection = BackdropSection.Sort
-                                // TODO this delay lets the backdrop layout so the reveal animation actually works :/
-                                delay(40)
-                                reveal()
-                            } else {
-                                if (targetValue == BackdropValue.Concealed) reveal() else conceal()
-                            }
-                        }
+                        with(scaffoldState) { if (targetValue == BackdropValue.Concealed) reveal() else conceal() }
                     }
                 }
             )
         },
         frontLayerContent = { RunsSection(uiState.value.runsUIState) },
         backLayerContent = {
-            when (backdropSection) {
-                BackdropSection.Filters -> FiltersSection(
-                    uiState = uiState.value.settingsUIState,
-                    onFiltersChanged = onSettingsChanged
-                )
-                BackdropSection.Sort -> SortSection(
-                    uiState = uiState.value.settingsUIState,
-                    onSortChanged = onSettingsChanged
-                )
-            }
-
+            FiltersSection(
+                uiState = uiState.value.settingsUIState,
+                onFiltersChanged = onSettingsChanged
+            )
         },
         backLayerBackgroundColor = MaterialTheme.colors.offWhite,
         frontLayerShape = MaterialTheme.shapes.large
@@ -122,8 +84,7 @@ private fun HomeTopAppBar(
     onChangeGameButtonClicked: () -> Unit,
     refreshButtonEnabled: Boolean,
     onRefreshButtonClicked: () -> Unit,
-    onFiltersButtonClicked: () -> Unit,
-    onSortButtonClicked: () -> Unit
+    onFiltersButtonClicked: () -> Unit
 ) {
     TopAppBar(
         title = { Text("$gameName ${if (runCount != null && runCount > 0) "($runCount runs)" else ""}") },
@@ -131,7 +92,6 @@ private fun HomeTopAppBar(
             GameDialogButton(onChangeGameButtonClicked)
             RefreshButton(refreshButtonEnabled, onRefreshButtonClicked)
             FiltersButton(onFiltersButtonClicked)
-            SortButton(onSortButtonClicked)
         }
     )
 }
@@ -177,21 +137,6 @@ private fun FiltersButton(
         Icon(
             imageVector = vectorXmlResource("ic_filter.xml"),
             contentDescription = "Filters"
-        )
-    }
-}
-
-@Composable
-private fun SortButton(
-    onClick: () -> Unit
-) {
-    IconButton(
-        onClick = onClick
-    ) {
-        // TODO change this to IconToggleButton?
-        Icon(
-            imageVector = vectorXmlResource("ic_sort.xml"),
-            contentDescription = "Sort"
         )
     }
 }
