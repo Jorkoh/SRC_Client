@@ -10,6 +10,7 @@ import kotlin.collections.List;
 
 CREATE TABLE settings (
     id INTEGER AS SettingsId PRIMARY KEY,
+    filterQuery TEXT NOT NULL,
     runStatus TEXT AS RunStatus,
     categoryId TEXT AS CategoryId,
     leaderboardStyle TEXT AS LeaderboardStyle NOT NULL,
@@ -25,8 +26,8 @@ CREATE TABLE game (
     isSelected INTEGER AS Boolean NOT NULL DEFAULT 0
 );
 
-INSERT INTO settings (id, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
-VALUES (1, NULL, NULL, "No", "[]", "SubmissionDate", "Ascending");
+INSERT INTO settings (id, filterQuery, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
+VALUES (1, "", NULL, NULL, "No", "[]", "SubmissionDate", "Ascending");
 
 getSelectedGame:
 SELECT *
@@ -49,7 +50,7 @@ FROM settings
 LIMIT 1;
 
 updateSettings:
-INSERT OR REPLACE INTO settings (id, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
+INSERT OR REPLACE INTO settings (id, filterQuery, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
 VALUES ?;
 
 resetGameSpecificSettings:

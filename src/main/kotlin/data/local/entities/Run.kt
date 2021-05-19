@@ -22,9 +22,9 @@ data class Run(
     val levelId: LevelId?,
     val variablesAndValuesIds: List<VariableAndValueIds>,
 
-    val isEmulated : Boolean,
-    val platformId : PlatformId?,
-    val regionId : RegionId?,
+    val isEmulated: Boolean,
+    val platformId: PlatformId?,
+    val regionId: RegionId?,
 
     val runStatus: RunStatus,
     val verifierId: UserId?,
@@ -41,6 +41,7 @@ data class Run(
     val inGameTime: Duration,
 
     val comment: String?,
+    val rejectionReason: String?,
     val videoText: String?,
     val videoLinks: List<String>,
     val weblink: String

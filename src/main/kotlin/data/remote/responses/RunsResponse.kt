@@ -66,6 +66,8 @@ data class Status(
     val verifierId: String?,
     @Json(name = "verify-date")
     val verificationDate: Date?,
+    @Json(name = "reason")
+    val rejectionReason: String?,
 )
 
 @JsonClass(generateAdapter = true)

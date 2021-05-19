@@ -89,6 +89,7 @@ class SRCRepository(
             (settings.runStatus?.filter(run) ?: true)
                     && (settings.categoryId?.let { run.categoryId == it } ?: true)
                     && settings.variablesAndValuesIds.filter(run)
+                    && settings.filterQuery.filter(run)
         }.sortedWith { run1, run2 ->
             // TODO the main shortcoming is that stuff is compared by their id instead of their visible name
             when (settings.runSortDiscriminator) {
@@ -139,6 +140,16 @@ class SRCRepository(
     private fun List<VariableAndValueIds>.filter(run: Run) = all { (filterVariableId, filterValueId) ->
         run.variablesAndValuesIds.any { (runVariableId, runValueId) ->
             runVariableId == filterVariableId && runValueId == filterValueId
+        }
+    }
+
+    private fun String.filter(run: Run): Boolean {
+        return if (this.isNotBlank()) {
+            run.players.joinToString(" ") { it.name }.contains(other = this, ignoreCase = true)
+                    || run.comment?.contains(other = this, ignoreCase = true) ?: false
+                    || run.rejectionReason?.contains(other = this, ignoreCase = true) ?: false
+        } else {
+            true
         }
     }
 

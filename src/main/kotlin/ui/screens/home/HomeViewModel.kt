@@ -161,6 +161,7 @@ sealed class HomeUIState(
         class LoadedSettings(
             val settings: Settings = Settings(
                 id = SettingsId.Default,
+                filterQuery = "",
                 runStatus = null,
                 categoryId = null,
                 leaderboardStyle = LeaderboardStyle.Default,

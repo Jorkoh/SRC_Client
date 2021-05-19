@@ -1,12 +1,16 @@
 package ui.screens.home
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,7 +53,11 @@ private fun FiltersContent(
         val categories = uiState.game.categories.filter { it.type == CategoryType.PerGame }
         val selectedCategory = categories.firstOrNull { it.categoryId == uiState.settings.categoryId }
 
+        // Filter by text
+        QueryFilter(uiState.settings, onFiltersChanged)
+
         // Category, run status, "leaderboard" view
+        Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
         GlobalFilters(
             categories = categories,
             selectedCategory = selectedCategory,
@@ -79,6 +87,31 @@ private fun FiltersContent(
         Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
         SortingComponent(uiState.settings, onFiltersChanged)
     }
+}
+
+@Composable
+private fun QueryFilter(
+    settings: Settings,
+    onFiltersChanged: (Settings) -> Unit
+) {
+    OutlinedTextField(
+        value = settings.filterQuery,
+        onValueChange = { onFiltersChanged(settings.copy(filterQuery = it)) },
+        label = { Text("Search") },
+        trailingIcon = {
+            AnimatedVisibility(
+                visible = settings.filterQuery.isNotEmpty(),
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = "Delete query",
+                    modifier = Modifier.clickable { onFiltersChanged(settings.copy(filterQuery = "")) }
+                )
+            }
+        }
+    )
 }
 
 @Composable

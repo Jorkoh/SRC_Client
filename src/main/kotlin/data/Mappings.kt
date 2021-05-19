@@ -83,6 +83,7 @@ fun RunResponse.toRun() = Run(
     runStatus = status.value,
     verifierId = status.verifierId?.let(::UserId),
     verificationDate = status.verificationDate,
+    rejectionReason = status.rejectionReason,
     players = players.players.map(PlayerResponse::toUser),
     comment = comment,
     runDate = runDate,
