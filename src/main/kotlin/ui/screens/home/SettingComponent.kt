@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import ui.utils.CustomDropdownMenu
 
 @Composable
 fun <T : Displayable> SettingComponent(
@@ -36,7 +37,7 @@ fun <T : Displayable> SettingComponent(
             )
             Icon(Icons.Default.ArrowDropDown, contentDescription = null)
         }
-        DropdownMenu(
+        CustomDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
