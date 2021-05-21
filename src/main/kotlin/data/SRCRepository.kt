@@ -10,7 +10,6 @@ import data.remote.responses.RunResponse
 import data.utils.LeaderboardStyle
 import data.utils.RunSortDirection
 import data.utils.RunSortDiscriminator
-import data.utils.RunSortParameters
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -106,6 +105,7 @@ class SRCRepository(
                 RunSortDiscriminator.VerificationDate -> (run1.verificationDate ?: Date(0))
                     .compareTo(run2.verificationDate ?: Date(0))
                 RunSortDiscriminator.Status -> run1.runStatus.compareTo(run2.runStatus)
+                RunSortDiscriminator.PlayerCount -> run1.players.size.compareTo(run2.players.size)
             }.times(
                 when (settings.runSortDirection) {
                     RunSortDirection.Ascending -> 1
