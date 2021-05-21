@@ -9,6 +9,7 @@ import data.SRCRepository
 import data.local.DatabaseSingleton
 import data.local.SettingsDAO
 import data.local.GamesDAO
+import data.local.RunsDAO
 import data.remote.SRCService
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -31,6 +32,7 @@ fun main() = Window(
         modules(module {
             single { DatabaseSingleton() }
             single { SettingsDAO(get()) }
+            single { RunsDAO(get()) }
             single { GamesDAO(get()) }
             single { SRCService.create() }
             single { SRCRepository(get(), get()) }

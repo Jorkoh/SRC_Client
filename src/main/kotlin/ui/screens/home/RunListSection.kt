@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,11 +15,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.vectorXmlResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import data.local.RunId
 import data.local.entities.*
 import io.kamel.image.KamelImage
 import io.kamel.image.lazyImageResource
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import persistence.database.Settings
 import ui.screens.home.HomeUIState.RunsUIState.*
 import ui.theme.approveGreen
+import ui.theme.offWhite
 import ui.theme.pendingBlue
 import ui.theme.rejectRed
 import ui.utils.toSRCString
@@ -28,7 +34,56 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun RunsSection(uiState: HomeUIState.RunsUIState) {
+fun RunListSection(
+    uiState: State<HomeUIState>,
+    scope: CoroutineScope,
+    onChangeGameButtonClicked: () -> Unit,
+    onRefreshButtonClicked: () -> Unit,
+    onSettingsChanged: (Settings) -> Unit,
+    onRunSelected: (RunId) -> Unit
+) {
+    val scaffoldState = rememberBackdropScaffoldState(BackdropValue.Concealed)
+
+    BackdropScaffold(
+        scaffoldState = scaffoldState,
+        gesturesEnabled = false,
+        appBar = {
+            val gameName = (uiState.value as? HomeUIState.Ready)?.game?.name ?: "Loading game..."
+            val runCount = ((uiState.value as? HomeUIState.Ready)?.runsUIState as? LoadedRuns)?.runs?.size
+            RunListTopAppBar(
+                gameName = gameName,
+                runCount = runCount,
+                onChangeGameButtonClicked = onChangeGameButtonClicked,
+                refreshButtonEnabled = uiState.value is HomeUIState.Ready,
+                onRefreshButtonClicked = {
+                    onRefreshButtonClicked()
+                    scope.launch { scaffoldState.conceal() }
+                },
+                onFiltersButtonClicked = {
+                    scope.launch {
+                        with(scaffoldState) { if (targetValue == BackdropValue.Concealed) reveal() else conceal() }
+                    }
+                }
+            )
+        },
+        frontLayerContent = { RunList(uiState.value.runsUIState, onRunSelected) },
+        backLayerContent = {
+            FiltersSection(
+                uiState = uiState.value.settingsUIState,
+                onFiltersChanged = onSettingsChanged
+            )
+        },
+        backLayerBackgroundColor = MaterialTheme.colors.offWhite,
+        frontLayerShape = MaterialTheme.shapes.large
+    )
+}
+
+
+@Composable
+private fun RunList(
+    uiState: HomeUIState.RunsUIState,
+    onRunSelected: (RunId) -> Unit
+) {
     Box(modifier = Modifier.fillMaxSize()) {
         when (uiState) {
             is FailedToLoadRuns -> Box(
@@ -43,13 +98,17 @@ fun RunsSection(uiState: HomeUIState.RunsUIState) {
             ) {
                 CircularProgressIndicator(modifier = Modifier.padding(vertical = 10.dp))
             }
-            is LoadedRuns -> RunList(uiState.runs, uiState.game)
+            is LoadedRuns -> LoadedRunList(uiState.runs, uiState.game, onRunSelected)
         }
     }
 }
 
 @Composable
-private fun RunList(runs: List<Run>, game: FullGame) {
+private fun LoadedRunList(
+    runs: List<Run>,
+    game: FullGame,
+    onRunSelected: (RunId) -> Unit
+) {
     val listState = rememberLazyListState()
     val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd") }
 
@@ -59,7 +118,13 @@ private fun RunList(runs: List<Run>, game: FullGame) {
             modifier = Modifier.fillMaxWidth()
         ) {
             itemsIndexed(runs) { index, run ->
-                RunItem(index + 1, run, game, dateFormat)
+                RunItem(
+                    position = index + 1,
+                    run = run,
+                    game = game,
+                    dateFormat = dateFormat,
+                    onRunClicked = { onRunSelected(run.runId) }
+                )
             }
         }
         VerticalScrollbar(
@@ -78,7 +143,8 @@ private fun RunItem(
     position: Int,
     run: Run,
     game: FullGame,
-    dateFormat: SimpleDateFormat
+    dateFormat: SimpleDateFormat,
+    onRunClicked: () -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -86,6 +152,7 @@ private fun RunItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
+            .clickable(onClick = onRunClicked)
             .padding(top = 8.dp, bottom = 8.dp, start = 16.dp, end = 16.dp)
     ) {
         Text(text = position.toString(), style = MaterialTheme.typography.h6)

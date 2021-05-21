@@ -1,6 +1,6 @@
 import data.local.CategoryId;
 import data.local.GameId;
-import data.local.SettingsId;
+import data.local.RunId;
 import data.local.entities.RunStatus;
 import data.local.entities.VariableAndValueIds;
 import data.utils.LeaderboardStyle;
@@ -9,7 +9,6 @@ import data.utils.RunSortDiscriminator;
 import kotlin.collections.List;
 
 CREATE TABLE settings (
-    id INTEGER AS SettingsId PRIMARY KEY,
     filterQuery TEXT NOT NULL,
     runStatus TEXT AS RunStatus,
     categoryId TEXT AS CategoryId,
@@ -19,30 +18,42 @@ CREATE TABLE settings (
     runSortDirection TEXT AS RunSortDirection NOT NULL
 );
 
+CREATE TABLE selectedEntities (
+    selectedGameId TEXT AS GameId NOT NULL,
+    selectedRunId TEXT AS RunId,
+
+    FOREIGN KEY (selectedGameId) REFERENCES game (id)
+);
+
 CREATE TABLE game (
     id TEXT AS GameId PRIMARY KEY,
     abbreviation TEXT NOT NULL,
-    name TEXT NOT NULL,
-    isSelected INTEGER AS Boolean NOT NULL DEFAULT 0
+    name TEXT NOT NULL
 );
 
-INSERT INTO settings (id, filterQuery, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
-VALUES (1, "", NULL, NULL, "No", "[]", "SubmissionDate", "Ascending");
+INSERT INTO settings (filterQuery, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
+VALUES ("", NULL, NULL, "No", "[]", "SubmissionDate", "Ascending");
+
+INSERT INTO selectedEntities(selectedGameId, selectedRunId)
+VALUES ("j1npme6p", "zn18rv7m");
 
 getSelectedGame:
-SELECT *
+SELECT game.*
 FROM game
-WHERE isSelected = 1;
+INNER JOIN selectedEntities
+ON game.id = selectedEntities.selectedGameId;
 
-updateSelectedGameId {
-    UPDATE game
-    SET isSelected = 0
-    WHERE isSelected = 1;
+updateSelectedGameId:
+UPDATE selectedEntities
+SET selectedGameId = ?;
 
-    UPDATE game
-    SET isSelected = 1
-    WHERE id = ?;
-}
+getSelectedRunId:
+SELECT selectedRunId
+FROM selectedEntities;
+
+updateSelectedRunId:
+UPDATE selectedEntities
+SET selectedRunId = ?;
 
 getSettings:
 SELECT *
@@ -50,14 +61,12 @@ FROM settings
 LIMIT 1;
 
 updateSettings:
-INSERT OR REPLACE INTO settings (id, filterQuery, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
+INSERT OR REPLACE INTO settings (filterQuery, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
 VALUES ?;
 
 resetGameSpecificSettings:
 UPDATE settings
-SET categoryId = NULL,
-    variablesAndValuesIds = "[]"
-WHERE id = 1;
+SET categoryId = NULL, variablesAndValuesIds = "[]";
 
 getGameCount:
 SELECT COUNT(*)

@@ -1,11 +1,11 @@
 package data.remote
 
-import data.remote.utils.HttpRequestInterceptor
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import data.remote.adapters.*
 import data.remote.responses.*
+import data.remote.utils.HttpRequestInterceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -16,7 +16,7 @@ import java.util.*
 
 interface SRCService {
 
-    // https://github.com/speedruncomorg/api/blob/master/version1/games.md
+    // https://github.com/speedruncomorg/api/blob/master/version1/games.md#get-gamesid
     @GET("games/{id}")
     suspend fun fetchFullGame(
         @Path("id") gameId: String,
@@ -24,16 +24,16 @@ interface SRCService {
         @Query("embed") embed: String = "categories.variables,moderators,levels",
     ): PaginatedFullGameResponse
 
-    // https://github.com/speedruncomorg/api/blob/master/version1/games.md
+    // https://github.com/speedruncomorg/api/blob/master/version1/games.md#get-games
     @GET("games")
     suspend fun fetchGames(
-        @Query("offset") offset : Int?,
+        @Query("offset") offset: Int?,
         // Fixed query params
         @Query("_bulk") _bulk: Boolean = true,
         @Query("max") max: Int = PAGINATION_MAX_BULK_MODE
     ): PaginatedBulkGamesResponse
 
-    // https://github.com/speedruncomorg/api/blob/master/version1/runs.md
+    // https://github.com/speedruncomorg/api/blob/master/version1/runs.md#get-runs
     @GET("runs")
     suspend fun fetchRuns(
         @Query("game") gameId: String,
@@ -41,11 +41,19 @@ interface SRCService {
         @Query("status") status: String? = null,
         @Query("orderby") orderBy: String? = null,
         @Query("direction") direction: String? = null,
-        @Query("offset") offset : Int? = null,
+        @Query("offset") offset: Int? = null,
         // Fixed query params
         @Query("embed") embed: String = "players",
         @Query("max") max: Int = PAGINATION_MAX,
     ): PaginatedRunsResponse
+
+    // https://github.com/speedruncomorg/api/blob/master/version1/runs.md#get-runsid
+    @GET("runs/{runId}")
+    suspend fun fetchRun(
+        @Path("runId") runId: String,
+        // Fixed query params
+        @Query("embed") embed: String = "players,category.variables"
+    ): PaginatedFullRunResponse
 
     companion object {
         private const val BASE_URL = "https://www.speedrun.com/api/v1/"

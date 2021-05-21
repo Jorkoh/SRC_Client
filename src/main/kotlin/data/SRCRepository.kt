@@ -2,6 +2,7 @@ package data
 
 import data.local.GameId
 import data.local.GamesDAO
+import data.local.RunId
 import data.local.entities.*
 import data.remote.SRCService
 import data.remote.responses.GameResponse
@@ -25,12 +26,11 @@ class SRCRepository(
 
     fun getGames(query: String) = gamesDAO.getGames(query)
 
-    fun getFullGame(gameId: GameId) =
-        flow {
-            cacheRuns(gameId)
-            val fullGame = srcService.fetchFullGame(gameId = gameId.value).fullGameResponse.toFullGame()
-            emit(fullGame)
-        }
+    fun getFullGame(gameId: GameId) = flow {
+        cacheRuns(gameId)
+        val fullGame = srcService.fetchFullGame(gameId = gameId.value).fullGameResponse.toFullGame()
+        emit(fullGame)
+    }
 
     fun cacheGamesIfNeeded(forceDownload: Boolean = false) =
         flow {
@@ -153,43 +153,8 @@ class SRCRepository(
         }
     }
 
-    fun getRuns(
-        gameId: GameId,
-        filters: Settings,
-        sortingParams: RunSortParameters? = null
-    ) = flow {
-        val runs = mutableListOf<Run>()
-        var currentOffset = 0
-        do {
-            val responses = coroutineScope {
-                val requests = Array(SRCService.PARALLEL_REQUESTS) { i ->
-                    async {
-                        srcService.fetchRuns(
-                            gameId = gameId.value,
-                            categoryId = filters.categoryId?.value,
-                            status = filters.runStatus?.apiString,
-                            orderBy = sortingParams?.discriminator?.apiString,
-                            direction = sortingParams?.direction?.apiString,
-                            offset = currentOffset + i * SRCService.PAGINATION_MAX
-                        )
-                    }
-                }
-                awaitAll(*requests)
-            }
-
-            responses.flatMap { it.runResponses }.apply {
-                val filteredRunResponses = filter { response ->
-                    // A response needs to match all defined custom variable filters
-                    filters.variablesAndValuesIds.all { (filterVariableId, filterValueId) ->
-                        response.variablesAndValues.variablesAndValues.any { (responseVariableId, responseValueId) ->
-                            responseVariableId == filterVariableId.value && responseValueId == filterValueId.value
-                        }
-                    }
-                }
-                runs.addAll(filteredRunResponses.map(RunResponse::toRun))
-            }
-            currentOffset += SRCService.PAGINATION_MAX * SRCService.PARALLEL_REQUESTS
-        } while (responses.none { it.pagination.size < it.pagination.max || it.pagination.size == 0 })
-        emit(runs)
-    }.flowOn(Dispatchers.IO)
+    fun getFullRun(runId: RunId) = flow {
+        val fullRun = srcService.fetchRun(runId = runId.value).fullRunResponse.toFullRun()
+        emit(fullRun)
+    }
 }

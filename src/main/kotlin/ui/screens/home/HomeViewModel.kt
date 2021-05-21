@@ -1,15 +1,9 @@
 package ui.screens.home
 
 import data.SRCRepository
-import data.local.GameId
-import data.local.GamesDAO
-import data.local.SettingsDAO
-import data.local.SettingsId
+import data.local.*
 import data.local.entities.FullGame
 import data.local.entities.Run
-import data.utils.LeaderboardStyle
-import data.utils.RunSortDirection
-import data.utils.RunSortDiscriminator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,13 +18,21 @@ import persistence.database.Settings
 class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
 
     private val settingsDAO by inject<SettingsDAO>()
+    private val runsDAO by inject<RunsDAO>()
     private val gamesDAO by inject<GamesDAO>()
     private val srcRepository by inject<SRCRepository>()
 
     init {
         scope.launch {
             gamesDAO.getSelectedGame().collect { newSelectedGame ->
-                onSelectedGameChanged(newSelectedGame.id)
+                if (homeUIState.value.gameId != newSelectedGame.id) {
+                    onSelectedGameChanged(newSelectedGame.id)
+                }
+            }
+        }
+        scope.launch {
+            runsDAO.getSelectedRunId().collect { newSelectedRunId ->
+                setHasRunSelected(newSelectedRunId != null)
             }
         }
     }
@@ -56,6 +58,8 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
         }
 
         _homeUIState.value = HomeUIState.LoadingGame(
+            gameId = newSelectedGameId,
+            hasRunSelected = _homeUIState.value.hasRunSelected,
             gameSelectorIsOpen = _homeUIState.value.gameSelectorIsOpen
         )
         fullGameJob = scope.launch {
@@ -64,6 +68,7 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
                 game = fullGame,
                 settingsUIState = _homeUIState.value.settingsUIState,
                 runsUIState = _homeUIState.value.runsUIState,
+                hasRunSelected = _homeUIState.value.hasRunSelected,
                 gameSelectorIsOpen = _homeUIState.value.gameSelectorIsOpen
             )
             observeSettings()
@@ -100,15 +105,23 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
         settingsDAO.setSettings(newSettings)
     }
 
+    fun selectRun(runId: RunId) {
+        runsDAO.selectRun(runId)
+    }
+
 /* UTILS STUFF TO MANAGE STATE CLASS */
 
     private fun setSettingsUIState(settingsUIState: HomeUIState.SettingsUIState) {
         _homeUIState.value = when (val previous = _homeUIState.value) {
-            is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(previous.gameSelectorIsOpen)
+            is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(
+                hasRunSelected = previous.hasRunSelected,
+                gameSelectorIsOpen = previous.gameSelectorIsOpen
+            )
             is HomeUIState.Ready -> HomeUIState.Ready(
                 game = previous.game,
                 settingsUIState = settingsUIState,
                 runsUIState = previous.runsUIState,
+                hasRunSelected = previous.hasRunSelected,
                 gameSelectorIsOpen = previous.gameSelectorIsOpen
             )
         }
@@ -116,11 +129,31 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
 
     private fun setRunsUIState(runsUIState: HomeUIState.RunsUIState) {
         _homeUIState.value = when (val previous = _homeUIState.value) {
-            is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(previous.gameSelectorIsOpen)
+            is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(
+                hasRunSelected = previous.hasRunSelected,
+                gameSelectorIsOpen = previous.gameSelectorIsOpen
+            )
             is HomeUIState.Ready -> HomeUIState.Ready(
                 game = previous.game,
                 settingsUIState = previous.settingsUIState,
                 runsUIState = runsUIState,
+                hasRunSelected = previous.hasRunSelected,
+                gameSelectorIsOpen = previous.gameSelectorIsOpen
+            )
+        }
+    }
+
+    fun setHasRunSelected(hasRunSelected: Boolean) {
+        _homeUIState.value = when (val previous = _homeUIState.value) {
+            is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(
+                hasRunSelected = hasRunSelected,
+                gameSelectorIsOpen = previous.gameSelectorIsOpen
+            )
+            is HomeUIState.Ready -> HomeUIState.Ready(
+                settingsUIState = previous.settingsUIState,
+                runsUIState = previous.runsUIState,
+                game = previous.game,
+                hasRunSelected = hasRunSelected,
                 gameSelectorIsOpen = previous.gameSelectorIsOpen
             )
         }
@@ -128,11 +161,15 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
 
     fun setGameSelectorIsOpen(isOpen: Boolean) {
         _homeUIState.value = when (val previous = _homeUIState.value) {
-            is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(isOpen)
+            is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(
+                hasRunSelected = previous.hasRunSelected,
+                gameSelectorIsOpen = isOpen
+            )
             is HomeUIState.Ready -> HomeUIState.Ready(
                 settingsUIState = previous.settingsUIState,
                 runsUIState = previous.runsUIState,
                 game = previous.game,
+                hasRunSelected = previous.hasRunSelected,
                 gameSelectorIsOpen = isOpen
             )
         }
@@ -141,34 +178,36 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
 
 // TODO figure out a proper state nesting solution, right now it's pretty awkward
 sealed class HomeUIState(
+    val gameId: GameId?,
     val settingsUIState: SettingsUIState,
     val runsUIState: RunsUIState,
+    val hasRunSelected: Boolean,
     val gameSelectorIsOpen: Boolean,
 ) {
     class LoadingGame(
+        gameId: GameId? = null,
+        hasRunSelected: Boolean = false,
         gameSelectorIsOpen: Boolean = false
-    ) : HomeUIState(SettingsUIState.LoadingSettings, RunsUIState.LoadingRuns, gameSelectorIsOpen)
+    ) : HomeUIState(
+        gameId,
+        SettingsUIState.LoadingSettings,
+        RunsUIState.LoadingRuns,
+        hasRunSelected,
+        gameSelectorIsOpen
+    )
 
     class Ready(
         val game: FullGame,
         settingsUIState: SettingsUIState,
         runsUIState: RunsUIState,
+        hasRunSelected: Boolean,
         gameSelectorIsOpen: Boolean = false
-    ) : HomeUIState(settingsUIState, runsUIState, gameSelectorIsOpen)
+    ) : HomeUIState(game.gameId, settingsUIState, runsUIState, hasRunSelected, gameSelectorIsOpen)
 
     sealed class SettingsUIState {
         object LoadingSettings : SettingsUIState()
         class LoadedSettings(
-            val settings: Settings = Settings(
-                id = SettingsId.Default,
-                filterQuery = "",
-                runStatus = null,
-                categoryId = null,
-                leaderboardStyle = LeaderboardStyle.Default,
-                variablesAndValuesIds = emptyList(),
-                runSortDiscriminator = RunSortDiscriminator.Default,
-                runSortDirection = RunSortDirection.Default
-            ),
+            val settings: Settings,
             val game: FullGame
         ) : SettingsUIState()
     }

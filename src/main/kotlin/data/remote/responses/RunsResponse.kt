@@ -116,3 +116,55 @@ data class Videos(
     @Json(name = "links")
     val links: List<Link>?
 )
+
+@JsonClass(generateAdapter = true)
+data class PaginatedFullRunResponse(
+    @Json(name = "data")
+    val fullRunResponse: FullRunResponse
+)
+
+@JsonClass(generateAdapter = true)
+data class FullRunResponse(
+    @Json(name = "id")
+    val id: String,
+    @Json(name = "status")
+    val status: Status,
+    @Json(name = "weblink")
+    val weblink: String,
+
+    @Json(name = "game")
+    val gameId: String,
+    @Json(name = "category")
+    val category: RunCategory,
+    @Json(name = "level")
+    val levelId: String?,
+    @Json(name = "values")
+    val variablesAndValues: VariablesAndValuesResponses,
+
+    @Json(name = "players")
+    val players: Players,
+
+    @Json(name = "comment")
+    val comment: String?,
+    @Json(name = "date")
+    val runDate: Date?,
+    @Json(name = "links")
+    val links: List<Link>,
+    @Json(name = "splits")
+    val splits: Link?,
+    @Json(name = "submitted")
+    val submissionDate: Date?,
+    @Json(name = "system")
+    val system: GameSystem,
+    @Json(name = "times")
+    val times: Times,
+    @Json(name = "videos")
+    val videos: Videos?,
+)
+
+@JsonClass(generateAdapter = true)
+data class RunCategory(
+    @Json(name = "data")
+    val value : CategoryResponse
+)
+

@@ -10,14 +10,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import persistence.database.DatabaseInstance
 import persistence.database.Game
+import persistence.database.SelectedEntities
 import persistence.database.Settings
-
-inline class SettingsId(val value: Long) {
-    companion object {
-        // can't override invoke and private constructor because sqldelight fails generation :(
-        val Default = SettingsId(1)
-    }
-}
 
 inline class GameId(val value: String) {
     companion object {
@@ -58,9 +52,9 @@ class DatabaseSingleton {
             override fun decode(databaseValue: String) = GameId(databaseValue)
             override fun encode(value: GameId) = value.value
         }
-        val settingsIdAdapter = object : ColumnAdapter<SettingsId, Long> {
-            override fun decode(databaseValue: Long) = SettingsId.Default
-            override fun encode(value: SettingsId) = value.value
+        val runIdAdapter = object : ColumnAdapter<RunId, String> {
+            override fun decode(databaseValue: String) = RunId(databaseValue)
+            override fun encode(value: RunId) = value.value
         }
         val categoryIdAdapter = object : ColumnAdapter<CategoryId, String> {
             override fun decode(databaseValue: String) = CategoryId(databaseValue)
@@ -73,18 +67,21 @@ class DatabaseSingleton {
 
         db = DatabaseInstance(
             driver = driver,
-            gameAdapter = Game.Adapter(
-                idAdapter = gameIdAdapter
-            ),
             settingsAdapter = Settings.Adapter(
-                idAdapter = settingsIdAdapter,
                 runStatusAdapter = EnumColumnAdapter(),
                 categoryIdAdapter = categoryIdAdapter,
                 leaderboardStyleAdapter = EnumColumnAdapter(),
                 variablesAndValuesIdsAdapter = variablesAndValuesIdsAdapter,
                 runSortDiscriminatorAdapter = EnumColumnAdapter(),
                 runSortDirectionAdapter = EnumColumnAdapter()
-            )
+            ),
+            selectedEntitiesAdapter = SelectedEntities.Adapter(
+                selectedGameIdAdapter = gameIdAdapter,
+                selectedRunIdAdapter = runIdAdapter
+            ),
+            gameAdapter = Game.Adapter(
+                idAdapter = gameIdAdapter
+            ),
         )
     }
 

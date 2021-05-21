@@ -7,7 +7,7 @@ import persistence.database.Game
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-fun GameResponse.toGame() = Game(GameId(id), abbreviation, names.international, false)
+fun GameResponse.toGame() = Game(GameId(id), abbreviation, names.international)
 
 // assets, links and levels not mapped for now
 fun FullGameResponse.toFullGame() = FullGame(
@@ -73,6 +73,34 @@ fun RunResponse.toRun() = Run(
     runId = RunId(id),
     gameId = GameId(gameId),
     categoryId = CategoryId(categoryId),
+    levelId = levelId?.let(::LevelId),
+    variablesAndValuesIds = variablesAndValues.variablesAndValues.map {
+        VariableAndValueIds(VariableId(it.variableId), ValueId(it.valueId))
+    },
+    isEmulated = system.emulated,
+    platformId = system.platformId?.let(::PlatformId),
+    regionId = system.regionId?.let(::RegionId),
+    runStatus = status.value,
+    verifierId = status.verifierId?.let(::UserId),
+    verificationDate = status.verificationDate,
+    rejectionReason = status.rejectionReason,
+    players = players.players.map(PlayerResponse::toUser),
+    comment = comment,
+    runDate = runDate,
+    submissionDate = submissionDate,
+    primaryTime = times.primarySeconds.toDuration(DurationUnit.SECONDS),
+    realTime = times.realTimeSeconds.toDuration(DurationUnit.SECONDS),
+    realTimeNoLoads = times.realTimeNoLoadsSeconds.toDuration(DurationUnit.SECONDS),
+    inGameTime = times.inGameSeconds.toDuration(DurationUnit.SECONDS),
+    videoText = videos?.text,
+    videoLinks = videos?.links?.map { it.uri } ?: emptyList(),
+    weblink = weblink
+)
+
+fun FullRunResponse.toFullRun() = FullRun(
+    runId = RunId(id),
+    gameId = GameId(gameId),
+    category = category.value.toCategory(),
     levelId = levelId?.let(::LevelId),
     variablesAndValuesIds = variablesAndValues.variablesAndValues.map {
         VariableAndValueIds(VariableId(it.variableId), ValueId(it.valueId))
