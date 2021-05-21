@@ -11,7 +11,10 @@ class SettingsDAO(databaseSingleton: DatabaseSingleton) {
     fun getSettings() = queries.getSettings().asFlow().mapToOne()
 
     fun setSettings(newSettings: Settings) {
-        queries.updateSettings(newSettings)
+        queries.transaction {
+            queries.deleteSettings()
+            queries.insertSettings(newSettings)
+        }
     }
 
     fun resetGameSpecificSettings() {

@@ -1,32 +1,33 @@
 package ui.screens.home
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.vectorXmlResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import data.local.RunId
-import data.local.entities.*
-import io.kamel.image.KamelImage
-import io.kamel.image.lazyImageResource
+import data.local.entities.Category
+import data.local.entities.FullGame
+import data.local.entities.Run
+import data.local.entities.TimingMethod
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import persistence.database.Settings
+import ui.screens.components.PlayerNames
+import ui.screens.components.RunStatusIndicator
 import ui.screens.home.HomeUIState.RunsUIState.*
-import ui.theme.approveGreen
 import ui.theme.offWhite
-import ui.theme.pendingBlue
-import ui.theme.rejectRed
 import ui.utils.toSRCString
 import java.awt.Desktop
 import java.net.URI
@@ -167,7 +168,7 @@ private fun RunItem(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 RunTime(run, game.primaryTimingMethod)
-                PlayerName(run.players)
+                PlayerNames(players = run.players, displayOnlyFirst = true)
                 run.runDate?.let {
                     RunDate(it, dateFormat)
                 }
@@ -226,31 +227,6 @@ private fun CategoryAndVariables(run: Run, categories: List<Category>) {
 }
 
 @Composable
-private fun PlayerName(
-    players: List<User>
-) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        val playerName = players.firstOrNull()?.name ?: "No players"
-        val playerCountIndicator = when (players.size) {
-            0, 1 -> ""
-            2 -> " and 1 other"
-            else -> " and ${players.size - 1} others"
-        }
-
-        players.firstOrNull()?.countryCode?.let {
-            KamelImage(
-                resource = lazyImageResource(data = "https://www.speedrun.com/images/flags/$it.png"),
-                contentDescription = "Country",
-                crossfade = true,
-                modifier = Modifier.height(12.dp).border(1.dp, Color.Black)
-            )
-        }
-        Spacer(Modifier.width(4.dp))
-        Text("$playerName$playerCountIndicator")
-    }
-}
-
-@Composable
 private fun RunDate(
     runDate: Date,
     dateFormat: SimpleDateFormat
@@ -268,28 +244,6 @@ private fun SRCButton(weblink: String) {
         Icon(
             imageVector = vectorXmlResource("ic_open.xml"),
             contentDescription = "Open in speedrun.com"
-        )
-    }
-}
-
-@Composable
-private fun RunStatusIndicator(status: RunStatus, modifier: Modifier = Modifier) {
-    val statusColor = when (status) {
-        RunStatus.Pending -> MaterialTheme.colors.pendingBlue
-        RunStatus.Approved -> MaterialTheme.colors.approveGreen
-        RunStatus.Rejected -> MaterialTheme.colors.rejectRed
-        else -> LocalContentColor.current
-    }
-    Box(
-        modifier = modifier.background(
-            shape = MaterialTheme.shapes.small,
-            color = statusColor.copy(alpha = 0.1f)
-        ).padding(start = 4.dp, end = 4.dp, bottom = 2.dp)
-    ) {
-        Text(
-            text = status.name,
-            style = MaterialTheme.typography.caption,
-            color = statusColor
         )
     }
 }

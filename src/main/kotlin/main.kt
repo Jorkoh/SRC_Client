@@ -7,9 +7,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.IntSize
 import data.SRCRepository
 import data.local.DatabaseSingleton
-import data.local.SettingsDAO
 import data.local.GamesDAO
 import data.local.RunsDAO
+import data.local.SettingsDAO
 import data.remote.SRCService
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -21,9 +21,9 @@ import java.awt.Dimension
 
 fun main() = Window(
     title = "SRC Client by Kohru",
-    size = IntSize(650, 900)
+    size = IntSize(600, 900)
 ) {
-    AppManager.windows[0].window.minimumSize = Dimension(650, 900)
+    AppManager.windows[0].window.minimumSize = Dimension(600, 600)
 
     // TODO remove this once done testing or move it to build configs somehow
     System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "TRACE")

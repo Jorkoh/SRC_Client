@@ -60,8 +60,11 @@ SELECT *
 FROM settings
 LIMIT 1;
 
-updateSettings:
-INSERT OR REPLACE INTO settings (filterQuery, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
+deleteSettings:
+DELETE FROM settings;
+
+insertSettings:
+INSERT INTO settings (filterQuery, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
 VALUES ?;
 
 resetGameSpecificSettings:

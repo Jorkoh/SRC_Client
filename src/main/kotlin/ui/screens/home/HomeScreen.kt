@@ -45,7 +45,7 @@ private fun HomeScreenContent(
             Row(Modifier.fillMaxSize()) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.requiredWidthIn(min = 650.dp).fillMaxWidth(0.4f)
+                    modifier = Modifier.requiredWidthIn(min = 600.dp).fillMaxWidth(0.4f)
                 ) {
                     RunListSection(
                         uiState = uiState,

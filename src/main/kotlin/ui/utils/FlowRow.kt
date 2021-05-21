@@ -40,7 +40,7 @@ fun FlowRow(
     }
     rows += Row(rowPlaceables, horizontalGapPx)
 
-    val width = constraints.maxWidth
+    val width = rows.maxOf { it.width }.coerceAtMost(constraints.maxWidth)
     val height = (rows.sumBy { row -> row.height } + (rows.size - 1) * verticalGapPx)
         .coerceAtMost(constraints.maxHeight)
 
