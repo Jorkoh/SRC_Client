@@ -68,7 +68,7 @@ data class CustomDropdownMenuPositionProvider(
         popupContentSize: IntSize
     ): IntOffset {
         // The min margin above and below the menu, relative to the screen.
-        val verticalMargin = with(density) { 32.dp.roundToPx() }
+        val verticalMargin = with(density) { 0.dp.roundToPx() }
         // The content offset specified using the dropdown offset parameter.
         val contentOffsetX = with(density) { contentOffset.x.roundToPx() }
         val contentOffsetY = with(density) { contentOffset.y.roundToPx() }
@@ -94,7 +94,7 @@ data class CustomDropdownMenuPositionProvider(
         val y = sequenceOf(toBottom, toTop, toCenter, toDisplayBottom).firstOrNull {
             it >= verticalMargin &&
                     it + popupContentSize.height <= windowSize.height - verticalMargin
-        } ?: toBottom
+        } ?: toDisplayBottom
 
         onPositionCalculated(
             anchorBounds,
@@ -204,7 +204,7 @@ fun DropdownMenuContent(
     ) {
         Column(
             modifier = modifier
-                .padding(vertical = 8.dp)
+                .padding(vertical = 4.dp)
                 .width(IntrinsicSize.Max)
                 .verticalScroll(rememberScrollState()),
             content = content

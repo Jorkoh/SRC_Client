@@ -1,9 +1,7 @@
 package ui.screens.home
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -11,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.unit.dp
 import ui.utils.CustomDropdownMenu
 
 @Composable
@@ -42,10 +41,13 @@ fun <T : Displayable> SettingComponent(
             onDismissRequest = { expanded = false }
         ) {
             for (option in actualOptions) {
-                DropdownMenuItem(onClick = {
-                    expanded = false
-                    onOptionSelected(option)
-                }) {
+                DropdownMenuItem(
+                    onClick = {
+                        expanded = false
+                        onOptionSelected(option)
+                    },
+                    modifier = Modifier.height(42.dp)
+                ) {
                     Text(
                         text = option?.uiString ?: "All",
                         modifier = Modifier.alpha(if (option?.uiString != null) 1f else 0.4f)
