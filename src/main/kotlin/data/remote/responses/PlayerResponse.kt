@@ -45,3 +45,9 @@ data class Country(
     @Json(name = "code")
     val code: String
 )
+
+@JsonClass(generateAdapter = true)
+data class PaginatedUserResponse(
+    @Json(name = "data")
+    val userResponse: UserResponse
+)

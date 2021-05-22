@@ -49,11 +49,17 @@ interface SRCService {
 
     // https://github.com/speedruncomorg/api/blob/master/version1/runs.md#get-runsid
     @GET("runs/{runId}")
-    suspend fun fetchRun(
+    suspend fun fetchFullRun(
         @Path("runId") runId: String,
         // Fixed query params
         @Query("embed") embed: String = "players,category.variables"
     ): PaginatedFullRunResponse
+
+    // https://github.com/speedruncomorg/api/blob/master/version1/users.md#get-usersid
+    @GET("users/{userId}")
+    suspend fun fetchUser(
+        @Path("userId") userId: String,
+    ): PaginatedUserResponse
 
     companion object {
         private const val BASE_URL = "https://www.speedrun.com/api/v1/"

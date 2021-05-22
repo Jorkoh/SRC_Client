@@ -154,7 +154,11 @@ class SRCRepository(
     }
 
     fun getFullRun(runId: RunId) = flow {
-        val fullRun = srcService.fetchRun(runId = runId.value).fullRunResponse.toFullRun()
-        emit(fullRun)
+        val fullRunResponse = srcService.fetchFullRun(runId = runId.value).fullRunResponse
+        val verifierResponse = fullRunResponse.status.verifierId?.let {
+            // TODO this may 4xx
+            srcService.fetchUser(it).userResponse
+        }
+        emit(fullRunResponse.toFullRun(verifierResponse))
     }
 }

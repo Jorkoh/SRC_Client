@@ -1,8 +1,10 @@
 package ui.screens.home
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -14,15 +16,17 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import data.local.entities.Category
-import data.local.entities.FullRun
-import data.local.entities.User
-import data.local.entities.VariableAndValueIds
+import data.local.entities.*
 import ui.screens.components.PlayerNames
+import ui.screens.components.RunStatusIndicator
 import ui.theme.offWhite
 import ui.utils.FlowRow
+import ui.utils.toSRCString
 import java.awt.Desktop
 import java.net.URI
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.time.Duration
 
 @Composable
 fun RunDetailSection(hasBackButton: Boolean = false) {
@@ -38,7 +42,7 @@ fun RunDetailSection(hasBackButton: Boolean = false) {
 
 @Composable
 private fun RunDetailContent(
-    uiState: State<RunDetailViewModel.RunDetailUIState>,
+    uiState: State<RunDetailUIState>,
     hasBackButton: Boolean,
     onBackPressed: () -> Unit
 ) {
@@ -57,15 +61,15 @@ private fun RunDetailContent(
                 modifier = Modifier.fillMaxSize().padding(16.dp)
             ) {
                 when (val state = uiState.value) {
-                    is RunDetailViewModel.RunDetailUIState.FailedToLoadRun -> Text(state.message)
-                    is RunDetailViewModel.RunDetailUIState.LoadedRun -> LoadedRun(state.run)
-                    is RunDetailViewModel.RunDetailUIState.LoadingRun -> Box(
+                    is RunDetailUIState.FailedToLoadRun -> Text(state.message)
+                    is RunDetailUIState.LoadedRun -> LoadedRun(state.run)
+                    is RunDetailUIState.LoadingRun -> Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         CircularProgressIndicator(modifier = Modifier.padding(vertical = 10.dp))
                     }
-                    is RunDetailViewModel.RunDetailUIState.NoRunSelected -> Text("Select a run to see it here")
+                    is RunDetailUIState.NoRunSelected -> Text("Select a run to see it here")
                 }
             }
         }
@@ -74,16 +78,26 @@ private fun RunDetailContent(
 
 @Composable
 private fun LoadedRun(run: FullRun) {
+    val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd") }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier.verticalScroll(rememberScrollState())
     ) {
         // TODO times, dates and verifier info
         Section("Metadata") {
-            Column {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Times(run.primaryTime, run.realTime, run.realTimeNoLoads, run.inGameTime)
                 CategoryAndVariables(run.category, run.variablesAndValuesIds)
-                Spacer(Modifier.height(8.dp))
                 Players(run.players)
+                Status(
+                    runStatus = run.runStatus,
+                    verifierName = run.verifier?.name ?: run.verifierId?.value,
+                    verificationDate = run.verificationDate,
+                    dateFormat = dateFormat
+                )
+                Dates(run.runDate, run.submissionDate, dateFormat)
             }
         }
         Section("Videos") {
@@ -94,6 +108,31 @@ private fun LoadedRun(run: FullRun) {
         }
         run.rejectionReason?.let {
             Section("Rejection reason") { Text(it) }
+        }
+    }
+}
+
+@Composable
+private fun Times(
+    primaryTime: Duration,
+    realTime: Duration,
+    realTimeNoLoads: Duration,
+    inGameTime: Duration
+) {
+    Row {
+        Text("Times:")
+        Spacer(Modifier.width(16.dp))
+        FlowRow(horizontalGap = 12.dp) {
+            Text("Primary ${primaryTime.toSRCString() ?: "No time"}")
+            realTime.toSRCString()?.let {
+                Text("RTA $it")
+            }
+            realTimeNoLoads.toSRCString()?.let {
+                Text("RTA-NL $it")
+            }
+            inGameTime.toSRCString()?.let {
+                Text("IGT $it")
+            }
         }
     }
 }
@@ -131,7 +170,11 @@ private fun CategoryAndVariables(category: Category, variablesAndValuesIds: List
                 Spacer(Modifier.width(16.dp))
                 FlowRow {
                     nonSubCategoryPairings.forEachIndexed { index, (variable, value) ->
-                        val separator = if (index != nonSubCategoryPairings.size - 1) ", " else ""
+                        val separator = when (index) {
+                            nonSubCategoryPairings.size - 2 -> " and "
+                            nonSubCategoryPairings.size - 1 -> ""
+                            else -> ", "
+                        }
                         Text("${variable.name}: ${value.label}$separator")
                     }
                 }
@@ -146,6 +189,44 @@ private fun Players(players: List<User>) {
         Text("Players:")
         Spacer(Modifier.width(16.dp))
         PlayerNames(players)
+    }
+}
+
+@Composable
+private fun Status(
+    runStatus: RunStatus,
+    verifierName: String?,
+    verificationDate: Date?,
+    dateFormat: SimpleDateFormat
+) {
+    Row {
+        Text("Status:")
+        Spacer(Modifier.width(16.dp))
+        FlowRow {
+            RunStatusIndicator(runStatus)
+            verifierName?.let { name ->
+                Text(" by $name")
+            }
+            verificationDate?.let { date ->
+                Text(" on ${dateFormat.format(date)}")
+            }
+        }
+    }
+}
+
+@Composable
+private fun Dates(
+    runDate: Date?,
+    submissionDate: Date?,
+    dateFormat: SimpleDateFormat
+) {
+    Row {
+        Text("Dates:")
+        Spacer(Modifier.width(16.dp))
+        FlowRow {
+            Text("Played on ${runDate?.let { dateFormat.format(it) } ?: "unknown date"}, ")
+            Text("submitted on ${submissionDate?.let { dateFormat.format(it) } ?: "unknown date"}")
+        }
     }
 }
 
@@ -174,9 +255,12 @@ private fun VideosText(videoLinks: List<String>, videoText: String?) {
 @Composable
 private fun Section(title: String, content: @Composable () -> Unit) {
     Card {
-        Column(modifier = Modifier.padding(8.dp)) {
-            Text(text = title, style = MaterialTheme.typography.h6)
-            Spacer(modifier = Modifier.height(8.dp))
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.h6,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
             SelectionContainer {
                 content()
             }

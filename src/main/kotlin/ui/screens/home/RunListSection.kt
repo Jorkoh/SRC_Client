@@ -167,7 +167,7 @@ private fun RunItem(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                RunTime(run, game.primaryTimingMethod)
+                Text(run.primaryTime.toSRCString() ?: "No time")
                 PlayerNames(players = run.players, displayOnlyFirst = true)
                 run.runDate?.let {
                     RunDate(it, dateFormat)
@@ -185,20 +185,6 @@ private fun RunItem(
             RunStatusIndicator(run.runStatus)
         }
     }
-}
-
-@Composable
-private fun RunTime(
-    run: Run,
-    primaryTimingMethod: TimingMethod
-) {
-    // TODO this API mess should have been fixed in the response mapping
-    val timeSRCString = when (primaryTimingMethod) {
-        TimingMethod.RealTime -> run.realTime
-        TimingMethod.RealTimeNoLoads -> run.realTimeNoLoads
-        TimingMethod.InGame -> run.inGameTime
-    }.toSRCString()
-    Text("${primaryTimingMethod.uiString} $timeSRCString")
 }
 
 @Composable

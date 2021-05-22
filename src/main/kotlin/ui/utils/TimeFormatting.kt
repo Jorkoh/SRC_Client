@@ -8,7 +8,7 @@ fun Duration.toSRCString() = toComponents { hours, minutes, seconds, nanoseconds
     val milliseconds = (nanoseconds / 1000000.0).roundToInt()
 
     if (hours == 0 && minutes == 0 && seconds == 0 && nanoseconds == 0) {
-        "-"
+        null
     } else {
         buildList {
             if (hours != 0) add("${hours}h")

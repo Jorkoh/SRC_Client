@@ -61,6 +61,7 @@ data class FullRun(
 
     val runStatus: RunStatus,
     val verifierId: UserId?,
+    val verifier: RegisteredUser?,
 
     val players: List<User>,
 

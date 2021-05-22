@@ -52,11 +52,11 @@ class RunDetailViewModel(private val scope: CoroutineScope) : KoinComponent {
     fun onRunDeselected() {
         runsDAO.deselectRun()
     }
+}
 
-    sealed class RunDetailUIState(val runId: RunId?) {
-        object NoRunSelected : RunDetailUIState(null)
-        class LoadingRun(runId: RunId) : RunDetailUIState(runId)
-        class LoadedRun(val run: FullRun) : RunDetailUIState(run.runId)
-        class FailedToLoadRun(val message: String) : RunDetailUIState(null)
-    }
+sealed class RunDetailUIState(val runId: RunId?) {
+    object NoRunSelected : RunDetailUIState(null)
+    class LoadingRun(runId: RunId) : RunDetailUIState(runId)
+    class LoadedRun(val run: FullRun) : RunDetailUIState(run.runId)
+    class FailedToLoadRun(val message: String) : RunDetailUIState(null)
 }

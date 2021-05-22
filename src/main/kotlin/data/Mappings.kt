@@ -97,7 +97,7 @@ fun RunResponse.toRun() = Run(
     weblink = weblink
 )
 
-fun FullRunResponse.toFullRun() = FullRun(
+fun FullRunResponse.toFullRun(verifier: UserResponse?) = FullRun(
     runId = RunId(id),
     gameId = GameId(gameId),
     category = category.value.toCategory(),
@@ -110,6 +110,7 @@ fun FullRunResponse.toFullRun() = FullRun(
     regionId = system.regionId?.let(::RegionId),
     runStatus = status.value,
     verifierId = status.verifierId?.let(::UserId),
+    verifier = verifier?.let { it.toUser() as? RegisteredUser },
     verificationDate = status.verificationDate,
     rejectionReason = status.rejectionReason,
     players = players.players.map(PlayerResponse::toUser),
