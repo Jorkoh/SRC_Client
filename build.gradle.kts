@@ -57,9 +57,7 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:1.7.30")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.5")
 
-    implementation(files("libs/kamel-image-desktop-0.2.0.jar"))
-    implementation(files("libs/kamel-core-jvm-0.2.0.jar"))
-    implementation("io.ktor:ktor-client-cio:1.5.4")
+    implementation("com.alialbaali.kamel:kamel-image:0.2.1")
 }
 
 tasks.withType<KotlinCompile>() {
@@ -77,7 +75,7 @@ compose.desktop {
     application {
         mainClass = "MainKt"
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Exe, TargetFormat.Deb)
             packageName = "SRC_Client"
             packageVersion = "1.0.0"
         }
