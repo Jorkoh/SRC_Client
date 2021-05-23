@@ -15,9 +15,9 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.4.32"
+    kotlin("jvm") version "1.5.0"
     kotlin("plugin.serialization") version "1.5.0"
-    id("org.jetbrains.compose") version "0.4.0-build188" // 190 and above crashes with Kamel
+    id("org.jetbrains.compose") version "0.4.0-build209"
     id("org.jetbrains.kotlin.kapt") version "1.4.32"
     id("com.squareup.sqldelight") version "1.5.0"
 }
@@ -57,7 +57,9 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:1.7.30")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.5")
 
-    implementation("com.alialbaali.kamel:kamel-image:0.2.0")
+    implementation(files("libs/kamel-image-desktop-0.2.0.jar"))
+    implementation(files("libs/kamel-core-jvm-0.2.0.jar"))
+    implementation("io.ktor:ktor-client-cio:1.5.4")
 }
 
 tasks.withType<KotlinCompile>() {

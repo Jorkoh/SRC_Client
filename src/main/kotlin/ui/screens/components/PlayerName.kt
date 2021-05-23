@@ -55,7 +55,6 @@ private fun PlayerName(player: User, postText: String) {
             KamelImage(
                 resource = lazyImageResource(data = "https://www.speedrun.com/images/flags/$it.png"),
                 contentDescription = "Country",
-                crossfade = true,
                 modifier = Modifier.height(12.dp).border(1.dp, Color.Black)
             )
             Spacer(Modifier.width(4.dp))
