@@ -1,5 +1,8 @@
 package ui.screens.home
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.ClickableText
@@ -11,17 +14,23 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.vectorXmlResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import data.local.entities.*
+import org.jetbrains.skija.Codec
+import org.jetbrains.skija.Data
+import ui.screens.components.LoadingIndicator
 import ui.screens.components.PlayerNames
 import ui.screens.components.RunStatusIndicator
 import ui.theme.offWhite
 import ui.utils.FlowRow
+import ui.utils.GifAnimation
 import ui.utils.toSRCString
 import java.awt.Desktop
 import java.net.URI
@@ -52,44 +61,54 @@ private fun RunDetailContent(
         modifier = Modifier.fillMaxSize()
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.height(56.dp)
-            ) {
-                if (hasBackButton) {
-                    IconButton(onClick = onBackPressed) {
-                        Icon(Icons.Default.ArrowBack, "Back")
-                    }
-                }
-                Spacer(Modifier.weight(1f))
-                (uiState.value as? RunDetailUIState.LoadedRun)?.run?.weblink?.let {
-                    TextButton(
-                        onClick = { Desktop.getDesktop().browse(URI(it)) },
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Text(text = "SRC")
-                        Icon(
-                            imageVector = vectorXmlResource("ic_open.xml"),
-                            contentDescription = "Open in speedrun.com"
-                        )
-                    }
-                }
+            if (uiState.value is RunDetailUIState.LoadedRun) {
+                TopComponents(
+                    hasBackButton = hasBackButton,
+                    onBackPressed = onBackPressed,
+                    weblink = (uiState.value as? RunDetailUIState.LoadedRun)?.run?.weblink
+                )
             }
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize().padding(16.dp)
+                modifier = Modifier.fillMaxSize()
             ) {
                 when (val state = uiState.value) {
                     is RunDetailUIState.FailedToLoadRun -> Text(state.message)
                     is RunDetailUIState.LoadedRun -> LoadedRun(state.run)
-                    is RunDetailUIState.LoadingRun -> Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        CircularProgressIndicator(modifier = Modifier.padding(vertical = 10.dp))
-                    }
-                    is RunDetailUIState.NoRunSelected -> Text("Select a run to see it here")
+                    is RunDetailUIState.LoadingRun -> LoadingIndicator()
+                    is RunDetailUIState.NoRunSelected -> NoRunSelectedIndicator()
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TopComponents(
+    hasBackButton: Boolean,
+    onBackPressed: () -> Unit,
+    weblink: String?
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.height(56.dp)
+    ) {
+        if (hasBackButton) {
+            IconButton(onClick = onBackPressed) {
+                Icon(Icons.Default.ArrowBack, "Back")
+            }
+        }
+        Spacer(Modifier.weight(1f))
+        weblink?.let {
+            TextButton(
+                onClick = { Desktop.getDesktop().browse(URI(it)) },
+                modifier = Modifier.padding(end = 8.dp)
+            ) {
+                Text(text = "SRC")
+                Icon(
+                    imageVector = vectorXmlResource("ic_open.xml"),
+                    contentDescription = "Open in speedrun.com"
+                )
             }
         }
     }
@@ -102,9 +121,8 @@ private fun LoadedRun(run: FullRun) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.verticalScroll(rememberScrollState())
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)
     ) {
-        // TODO times, dates and verifier info
         Section {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Times(run.primaryTime, run.realTime, run.realTimeNoLoads, run.inGameTime)
@@ -286,5 +304,33 @@ private fun Section(title: String? = null, content: @Composable () -> Unit) {
                 content()
             }
         }
+    }
+}
+
+@Composable
+private fun NoRunSelectedIndicator() {
+    val alpha = remember { Animatable(0f) }
+    LaunchedEffect(alpha) {
+        alpha.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 500, easing = LinearOutSlowInEasing)
+        )
+    }
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.alpha(alpha.value)
+    ) {
+        val codec = remember {
+            val classLoader = Thread.currentThread().contextClassLoader
+            classLoader.getResource("hacker_cd.gif")?.readBytes()?.let { bytes ->
+                Codec.makeFromData(Data.makeFromBytes(bytes))
+            }
+        }
+        codec?.let {
+            GifAnimation(codec, Modifier.size(112.dp))
+        }
+        Text(text = "Select a run to see it here", style = MaterialTheme.typography.subtitle1.copy(fontSize = 20.sp))
     }
 }

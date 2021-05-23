@@ -8,6 +8,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import data.local.entities.RunStatus
 import ui.theme.approveGreen
@@ -30,7 +31,7 @@ fun RunStatusIndicator(status: RunStatus, modifier: Modifier = Modifier) {
     ) {
         Text(
             text = status.name,
-            style = MaterialTheme.typography.caption,
+            style = MaterialTheme.typography.caption.copy(fontWeight = FontWeight.Medium),
             color = statusColor
         )
     }

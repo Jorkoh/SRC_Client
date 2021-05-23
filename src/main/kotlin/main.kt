@@ -21,7 +21,7 @@ import java.awt.Dimension
 
 fun main() = Window(
     title = "SRC Client by Kohru",
-    size = IntSize(600, 900)
+    size = IntSize(1200, 900)
 ) {
     AppManager.windows[0].window.minimumSize = Dimension(600, 600)
 

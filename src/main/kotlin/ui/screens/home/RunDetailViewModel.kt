@@ -40,7 +40,7 @@ class RunDetailViewModel(private val scope: CoroutineScope) : KoinComponent {
         if (selectedRunId == null) {
             _runDetailUIState.value = RunDetailUIState.NoRunSelected
         } else {
-            _runDetailUIState.value = RunDetailUIState.LoadingRun(selectedRunId)
+            _runDetailUIState.value = RunDetailUIState.LoadingRun
 
             fullRunJob = scope.launch {
                 val fullRun = srcRepository.getFullRun(selectedRunId).first()
@@ -56,7 +56,7 @@ class RunDetailViewModel(private val scope: CoroutineScope) : KoinComponent {
 
 sealed class RunDetailUIState(val runId: RunId?) {
     object NoRunSelected : RunDetailUIState(null)
-    class LoadingRun(runId: RunId) : RunDetailUIState(runId)
+    object LoadingRun : RunDetailUIState(null)
     class LoadedRun(val run: FullRun) : RunDetailUIState(run.runId)
     class FailedToLoadRun(val message: String) : RunDetailUIState(null)
 }

@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import persistence.database.Game
+import ui.screens.components.LoadingIndicator
 import ui.theme.approveGreen
 import ui.theme.rejectRed
 
@@ -199,9 +200,7 @@ fun GameSelectorDropdown(
                 .fillMaxWidth()
         ) {
             when (val state = uiState.value) {
-                is GameSelectorUIState.LoadingQuery -> item {
-                    CircularProgressIndicator(modifier = Modifier.padding(vertical = 10.dp))
-                }
+                is GameSelectorUIState.LoadingQuery -> item { LoadingIndicator() }
                 is GameSelectorUIState.FailedToLoadQuery -> item {
                     Text(state.message, modifier = Modifier.padding(vertical = 10.dp))
                 }

@@ -23,6 +23,7 @@ import data.local.entities.Run
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import persistence.database.Settings
+import ui.screens.components.LoadingIndicator
 import ui.screens.components.PlayerNames
 import ui.screens.components.RunStatusIndicator
 import ui.screens.home.HomeUIState.RunsUIState.*
@@ -92,12 +93,7 @@ private fun RunList(
             ) {
                 Text(uiState.message, modifier = Modifier.padding(vertical = 10.dp))
             }
-            is LoadingRuns -> Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                CircularProgressIndicator(modifier = Modifier.padding(vertical = 10.dp))
-            }
+            is LoadingRuns -> LoadingIndicator()
             is LoadedRuns -> LoadedRunList(uiState.runs, uiState.game, onRunSelected)
         }
     }
