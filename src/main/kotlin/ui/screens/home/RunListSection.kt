@@ -20,7 +20,6 @@ import data.local.RunId
 import data.local.entities.Category
 import data.local.entities.FullGame
 import data.local.entities.Run
-import data.local.entities.TimingMethod
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import persistence.database.Settings
@@ -159,7 +158,7 @@ private fun RunItem(
         Text(text = position.toString(), style = MaterialTheme.typography.h6)
         Spacer(Modifier.width(16.dp))
         Column(
-            verticalArrangement = Arrangement.SpaceEvenly,
+            verticalArrangement = Arrangement.Bottom,
             modifier = Modifier.weight(1f).fillMaxHeight()
         ) {
             Row(
@@ -173,7 +172,9 @@ private fun RunItem(
                     RunDate(it, dateFormat)
                 }
             }
+            Spacer(Modifier.height(2.dp))
             CategoryAndVariables(run, game.categories)
+            Spacer(Modifier.height(1.dp))
         }
         Spacer(Modifier.width(16.dp))
         Column(
@@ -224,7 +225,8 @@ private fun RunDate(
 private fun SRCButton(weblink: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.clickable { Desktop.getDesktop().browse(URI(weblink)) }.padding(start = 2.dp),
+        modifier = Modifier.clickable { Desktop.getDesktop().browse(URI(weblink)) }
+            .padding(start = 4.dp, end = 2.dp, bottom = 2.dp, top = 0.dp),
     ) {
         Text(text = "SRC", style = MaterialTheme.typography.button)
         Icon(

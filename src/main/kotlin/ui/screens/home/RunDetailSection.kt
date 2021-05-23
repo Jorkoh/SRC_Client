@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.vectorXmlResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -51,9 +52,27 @@ private fun RunDetailContent(
         modifier = Modifier.fillMaxSize()
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            if (hasBackButton) {
-                IconButton(onClick = onBackPressed) {
-                    Icon(Icons.Default.ArrowBack, "Back")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.height(56.dp)
+            ) {
+                if (hasBackButton) {
+                    IconButton(onClick = onBackPressed) {
+                        Icon(Icons.Default.ArrowBack, "Back")
+                    }
+                }
+                Spacer(Modifier.weight(1f))
+                (uiState.value as? RunDetailUIState.LoadedRun)?.run?.weblink?.let {
+                    TextButton(
+                        onClick = { Desktop.getDesktop().browse(URI(it)) },
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        Text(text = "SRC")
+                        Icon(
+                            imageVector = vectorXmlResource("ic_open.xml"),
+                            contentDescription = "Open in speedrun.com"
+                        )
+                    }
                 }
             }
             Box(
@@ -86,7 +105,7 @@ private fun LoadedRun(run: FullRun) {
         modifier = Modifier.verticalScroll(rememberScrollState())
     ) {
         // TODO times, dates and verifier info
-        Section("Metadata") {
+        Section {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Times(run.primaryTime, run.realTime, run.realTimeNoLoads, run.inGameTime)
                 CategoryAndVariables(run.category, run.variablesAndValuesIds)
@@ -233,7 +252,7 @@ private fun Dates(
 @Composable
 private fun VideosText(videoLinks: List<String>, videoText: String?) {
     // Fixed order
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         (videoLinks.takeLast(1) + videoLinks.dropLast(1)).forEach { videoLink ->
             ClickableText(
                 AnnotatedString(
@@ -253,14 +272,16 @@ private fun VideosText(videoLinks: List<String>, videoText: String?) {
 }
 
 @Composable
-private fun Section(title: String, content: @Composable () -> Unit) {
+private fun Section(title: String? = null, content: @Composable () -> Unit) {
     Card {
         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.h6,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            title?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.h6,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
             SelectionContainer {
                 content()
             }
