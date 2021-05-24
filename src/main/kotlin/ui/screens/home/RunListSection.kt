@@ -198,7 +198,7 @@ private fun CategoryAndVariables(run: Run, categories: List<Category>) {
             }
             Pair(variable, value)
         }.sortedByDescending { it.first.isSubCategory }.map { it.second.label }
-        "${category.name} - ${valueLabels.joinToString()}"
+        "${category.name}${if (valueLabels.isNotEmpty()) " - " else ""}${valueLabels.joinToString()}"
     } else {
         "Category not part of game categories"
     }

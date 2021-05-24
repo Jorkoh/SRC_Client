@@ -4,22 +4,19 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import data.local.entities.*
 import data.utils.LeaderboardStyle
 import data.utils.RunSortDirection
 import data.utils.RunSortDiscriminator
+import data.utils.SearchQueryTarget
 import persistence.database.Settings
 import ui.screens.components.LoadingIndicator
 import ui.utils.FlowRow
@@ -91,24 +88,38 @@ private fun QueryFilter(
     settings: Settings,
     onFiltersChanged: (Settings) -> Unit
 ) {
-    OutlinedTextField(
-        value = settings.filterQuery,
-        onValueChange = { onFiltersChanged(settings.copy(filterQuery = it)) },
-        label = { Text("Search") },
-        trailingIcon = {
-            AnimatedVisibility(
-                visible = settings.filterQuery.isNotEmpty(),
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = "Delete query",
-                    modifier = Modifier.clickable { onFiltersChanged(settings.copy(filterQuery = "")) }
-                )
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(24.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedTextField(
+            value = settings.searchQuery,
+            onValueChange = { onFiltersChanged(settings.copy(searchQuery = it)) },
+            label = { Text("Search") },
+            trailingIcon = {
+                AnimatedVisibility(
+                    visible = settings.searchQuery.isNotEmpty(),
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Delete query",
+                        modifier = Modifier.clickable { onFiltersChanged(settings.copy(searchQuery = "")) }
+                    )
+                }
             }
-        }
-    )
+        )
+
+        val searchQueryTargets = SearchQueryTarget.values().toList()
+        val searchQueryTarget = settings.searchQueryTarget
+        SettingComponent(
+            title = "In",
+            selectedOption = searchQueryTarget,
+            options = searchQueryTargets,
+            onOptionSelected = { onFiltersChanged(settings.copy(searchQueryTarget = it)) }
+        )
+    }
 }
 
 @Composable

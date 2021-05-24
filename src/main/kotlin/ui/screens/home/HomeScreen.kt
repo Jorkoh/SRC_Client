@@ -41,7 +41,7 @@ private fun HomeScreenContent(
     }
 
     BoxWithConstraints {
-        if (maxWidth.value > 1150) {
+        if (maxWidth.value > 1050) {
             Row(Modifier.fillMaxSize()) {
                 Box(
                     contentAlignment = Alignment.Center,

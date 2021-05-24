@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class SplashViewModel(private val scope: CoroutineScope) : KoinComponent {
+class SplashViewModel(scope: CoroutineScope) : KoinComponent {
 
     private val srcRepository by inject<SRCRepository>()
 
@@ -22,7 +22,9 @@ class SplashViewModel(private val scope: CoroutineScope) : KoinComponent {
         }
     }
 
-    private val _splashUIState = MutableStateFlow<SplashUIState>(SplashUIState.Loading())
+    private val _splashUIState = MutableStateFlow<SplashUIState>(
+        SplashUIState.Loading("Checking game cache... If stuck run as admin :)")
+    )
     val splashUIState: StateFlow<SplashUIState> = _splashUIState
 }
 

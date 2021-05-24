@@ -22,9 +22,6 @@ plugins {
     id("com.squareup.sqldelight") version "1.5.0"
 }
 
-group = "me.kohru"
-version = "1.0"
-
 repositories {
     jcenter()
     mavenCentral()
@@ -76,8 +73,31 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Exe, TargetFormat.Deb)
-            packageName = "SRC_Client"
+
+//            modules("java.instrument", "java.sql", "jdk.unsupported")
+            includeAllModules = true
+            fromFiles(project.file("app/icon.png"))
+
+            packageName = "SRC Client"
             packageVersion = "1.0.0"
+            description = "Alternative client for speedrun.com"
+            copyright = "By Kohru, check repo for license."
+
+            macOS {
+                // macOS specific options
+            }
+            windows {
+                // Windows specific options
+                dirChooser = true
+                installationPath = "SRC Client"
+                perUserInstall = true
+                shortcut = true
+                upgradeUuid = "1E2A89BD-44C6-4A7E-A55D-AB92947F6047"
+                iconFile.set(project.file("app/icon.ico"))
+            }
+            linux {
+                // Linux specific options
+            }
         }
     }
 }

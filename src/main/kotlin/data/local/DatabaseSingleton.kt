@@ -68,6 +68,7 @@ class DatabaseSingleton {
         db = DatabaseInstance(
             driver = driver,
             settingsAdapter = Settings.Adapter(
+                searchQueryTargetAdapter = EnumColumnAdapter(),
                 runStatusAdapter = EnumColumnAdapter(),
                 categoryIdAdapter = categoryIdAdapter,
                 leaderboardStyleAdapter = EnumColumnAdapter(),

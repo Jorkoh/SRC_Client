@@ -10,6 +10,7 @@ import data.remote.responses.RunResponse
 import data.utils.LeaderboardStyle
 import data.utils.RunSortDirection
 import data.utils.RunSortDiscriminator
+import data.utils.SearchQueryTarget
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -88,7 +89,7 @@ class SRCRepository(
             (settings.runStatus?.filter(run) ?: true)
                     && (settings.categoryId?.let { run.categoryId == it } ?: true)
                     && settings.variablesAndValuesIds.filter(run)
-                    && settings.filterQuery.filter(run)
+                    && settings.searchQuery.filter(run, settings.searchQueryTarget)
         }.sortedWith { run1, run2 ->
             // TODO the main shortcoming is that stuff is compared by their id instead of their visible name
             when (settings.runSortDiscriminator) {
@@ -143,13 +144,16 @@ class SRCRepository(
         }
     }
 
-    private fun String.filter(run: Run): Boolean {
-        return if (this.isNotBlank()) {
-            run.players.joinToString(" ") { it.name }.contains(other = this, ignoreCase = true)
+    private fun String.filter(run: Run, searchQueryTarget: SearchQueryTarget?): Boolean {
+        if (this.isBlank()) return true
+        return when (searchQueryTarget) {
+            SearchQueryTarget.PlayerNames -> run.players.joinToString(" ") { it.name }
+                .contains(other = this, ignoreCase = true)
+            SearchQueryTarget.Comment -> run.comment?.contains(other = this, ignoreCase = true) ?: false
+            SearchQueryTarget.RejectionReason -> run.rejectionReason?.contains(other = this, ignoreCase = true) ?: false
+            null -> run.players.joinToString(" ") { it.name }.contains(other = this, ignoreCase = true)
                     || run.comment?.contains(other = this, ignoreCase = true) ?: false
                     || run.rejectionReason?.contains(other = this, ignoreCase = true) ?: false
-        } else {
-            true
         }
     }
 

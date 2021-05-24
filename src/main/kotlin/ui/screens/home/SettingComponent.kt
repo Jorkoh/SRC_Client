@@ -1,8 +1,13 @@
 package ui.screens.home
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
@@ -18,12 +23,13 @@ fun <T : Displayable> SettingComponent(
     selectedOption: T?,
     options: List<T>,
     addAllOption: Boolean = true,
+    modifier: Modifier = Modifier,
     onOptionSelected: (T?) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     val actualOptions = if (addAllOption) listOf(null).plus(options) else options
 
-    Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
+    Box(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier

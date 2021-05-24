@@ -18,9 +18,17 @@ import ui.screens.home.HomeScreen
 import ui.screens.splash.SplashScreen
 import ui.theme.SRCClientTheme
 import java.awt.Dimension
+import java.awt.image.BufferedImage
+import java.io.File
+import javax.imageio.ImageIO
 
 fun main() = Window(
     title = "SRC Client by Kohru",
+    icon = try {
+        ImageIO.read(File("app/icon.png"))
+    } catch (e: Exception) {
+        BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB)
+    },
     size = IntSize(1200, 900)
 ) {
     AppManager.windows[0].window.minimumSize = Dimension(600, 600)

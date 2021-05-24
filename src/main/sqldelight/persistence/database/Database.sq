@@ -6,10 +6,12 @@ import data.local.entities.VariableAndValueIds;
 import data.utils.LeaderboardStyle;
 import data.utils.RunSortDirection;
 import data.utils.RunSortDiscriminator;
+import data.utils.SearchQueryTarget;
 import kotlin.collections.List;
 
 CREATE TABLE settings (
-    filterQuery TEXT NOT NULL,
+    searchQuery TEXT NOT NULL,
+    searchQueryTarget TEXT AS SearchQueryTarget,
     runStatus TEXT AS RunStatus,
     categoryId TEXT AS CategoryId,
     leaderboardStyle TEXT AS LeaderboardStyle NOT NULL,
@@ -31,11 +33,11 @@ CREATE TABLE game (
     name TEXT NOT NULL
 );
 
-INSERT INTO settings (filterQuery, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
-VALUES ("", NULL, NULL, "No", "[]", "SubmissionDate", "Ascending");
+INSERT INTO settings (searchQuery, searchQueryTarget, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
+VALUES ("", NULL, "Pending", NULL, "No", "[]", "SubmissionDate", "Ascending");
 
 INSERT INTO selectedEntities(selectedGameId, selectedRunId)
-VALUES ("j1npme6p", "zn18rv7m");
+VALUES ("j1npme6p", NULL);
 
 getSelectedGame:
 SELECT game.*
@@ -64,7 +66,7 @@ deleteSettings:
 DELETE FROM settings;
 
 insertSettings:
-INSERT INTO settings (filterQuery, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
+INSERT INTO settings (searchQuery, searchQueryTarget,runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
 VALUES ?;
 
 resetGameSpecificSettings:
