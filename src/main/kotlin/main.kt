@@ -33,7 +33,6 @@ fun main() = Window(
 ) {
     AppManager.windows[0].window.minimumSize = Dimension(600, 600)
 
-    // TODO remove this once done testing or move it to build configs somehow
     System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "TRACE")
 
     startKoin {

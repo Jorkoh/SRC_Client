@@ -4,7 +4,7 @@ import mu.KotlinLogging
 import okhttp3.Interceptor
 import okhttp3.Response
 
-class HttpRequestInterceptor : Interceptor {
+class LoggerInterceptor : Interceptor {
     private val logger = KotlinLogging.logger {}
 
     override fun intercept(chain: Interceptor.Chain): Response {

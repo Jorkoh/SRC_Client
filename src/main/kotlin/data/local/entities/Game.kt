@@ -10,7 +10,6 @@ enum class TimingMethod(val apiString: String, override val uiString: String) : 
     InGame("ingame", "IGT")
 }
 
-// TODO look into supporting levels https://github.com/speedruncomorg/api/blob/master/version1/levels.md
 data class FullGame(
     val gameId: GameId,
     val name: String,
@@ -36,6 +35,7 @@ data class FullGame(
     val publisherIds: List<PublisherId>,
 
     val moderators: List<User>,
+    val levels : List<Level>,
     val categories: List<Category>,
 
     val weblink: String

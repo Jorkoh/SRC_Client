@@ -54,12 +54,11 @@ fun RunListSection(
             RunListTopAppBar(
                 gameName = gameName,
                 runCount = runCount,
+                changeButtonColored = uiState.value.gameSelectorIsOpen,
                 onChangeGameButtonClicked = onChangeGameButtonClicked,
                 refreshButtonEnabled = uiState.value is HomeUIState.Ready,
-                onRefreshButtonClicked = {
-                    onRefreshButtonClicked()
-                    scope.launch { scaffoldState.conceal() }
-                },
+                onRefreshButtonClicked = onRefreshButtonClicked,
+                filterButtonColored = scaffoldState.targetValue == BackdropValue.Revealed,
                 onFiltersButtonClicked = {
                     scope.launch {
                         with(scaffoldState) { if (targetValue == BackdropValue.Concealed) reveal() else conceal() }

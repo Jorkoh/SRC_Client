@@ -5,12 +5,10 @@ import ui.screens.home.Displayable
 import java.util.*
 import kotlin.time.Duration
 
-enum class RunStatus(val apiString: String, override val uiString: String) : Displayable {
+enum class RunStatus(val apiString: String?, override val uiString: String) : Displayable {
     Pending("new", "Pending"),
     Approved("verified", "Approved"),
-
-    // TODO this sort won't work when used directly on the API, need to make it type safe
-    PendingPlusApproved("null", "Pending + Approved"),
+    PendingPlusApproved("no-api-string", "Pending + Approved"),
     Rejected("rejected", "Rejected");
 }
 

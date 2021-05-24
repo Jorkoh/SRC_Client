@@ -9,7 +9,7 @@ import kotlin.time.toDuration
 
 fun GameResponse.toGame() = Game(GameId(id), abbreviation, names.international)
 
-// assets, links and levels not mapped for now
+// assets, links not mapped for now
 fun FullGameResponse.toFullGame() = FullGame(
     gameId = GameId(id),
     name = names.international,
@@ -31,7 +31,17 @@ fun FullGameResponse.toFullGame() = FullGame(
     developerIds = developerIds.map(::DeveloperId),
     publisherIds = publisherIds.map(::PublisherId),
     moderators = moderators.values.map(PlayerResponse::toUser),
+    levels = levels.values.map(LevelResponse::toLevel),
     categories = categories.values.map(CategoryResponse::toCategory),
+    weblink = weblink
+)
+
+// links not mapped for now
+fun LevelResponse.toLevel() = Level(
+    levelId = LevelId(id),
+    name = name,
+    rules = rules,
+    variables = variables.values.map(VariableResponse::toVariable),
     weblink = weblink
 )
 

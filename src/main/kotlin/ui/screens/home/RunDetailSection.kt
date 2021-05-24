@@ -116,7 +116,7 @@ private fun TopComponents(
 
 @Composable
 private fun LoadedRun(run: FullRun) {
-    val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd") }
+    val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd HH:mm") }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
