@@ -5,7 +5,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.Composable
@@ -114,10 +117,11 @@ private fun QueryFilter(
         val searchQueryTargets = SearchQueryTarget.values().toList()
         val searchQueryTarget = settings.searchQueryTarget
         SettingComponent(
-            title = "In",
+            title = "Where",
             selectedOption = searchQueryTarget,
             options = searchQueryTargets,
-            onOptionSelected = { onFiltersChanged(settings.copy(searchQueryTarget = it)) }
+            addAllOption = false,
+            onOptionSelected = { onFiltersChanged(settings.copy(searchQueryTarget = it ?: SearchQueryTarget.Default)) }
         )
     }
 }

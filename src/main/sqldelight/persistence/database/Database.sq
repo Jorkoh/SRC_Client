@@ -11,7 +11,7 @@ import kotlin.collections.List;
 
 CREATE TABLE settings (
     searchQuery TEXT NOT NULL,
-    searchQueryTarget TEXT AS SearchQueryTarget,
+    searchQueryTarget TEXT AS SearchQueryTarget NOT NULL,
     runStatus TEXT AS RunStatus,
     categoryId TEXT AS CategoryId,
     leaderboardStyle TEXT AS LeaderboardStyle NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE game (
 );
 
 INSERT INTO settings (searchQuery, searchQueryTarget, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
-VALUES ("", NULL, "Pending", NULL, "No", "[]", "SubmissionDate", "Ascending");
+VALUES ("", "Everywhere", "Pending", NULL, "No", "[]", "SubmissionDate", "Ascending");
 
 INSERT INTO selectedEntities(selectedGameId, selectedRunId)
 VALUES ("j1npme6p", NULL);

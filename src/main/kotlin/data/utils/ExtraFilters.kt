@@ -15,8 +15,13 @@ enum class LeaderboardStyle(override val uiString: String) : Displayable {
 }
 
 enum class SearchQueryTarget(override val uiString: String) : Displayable {
+    Everywhere("Everywhere"),
     PlayerNames("Player names"),
     CountryCodes("Country codes (ISO 2)"),
     Comment("Comment"),
-    RejectionReason("Rejection reason")
+    RejectionReason("Rejection reason");
+
+    companion object {
+        val Default = Everywhere
+    }
 }

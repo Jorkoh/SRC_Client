@@ -83,21 +83,17 @@ compose.desktop {
             description = "Alternative client for speedrun.com"
             copyright = "By Kohru, check repo for license."
 
-            macOS {
-                // macOS specific options
-            }
+            macOS { }
             windows {
-                // Windows specific options
                 dirChooser = true
                 installationPath = "SRC Client"
                 perUserInstall = true
                 shortcut = true
+                console = true
                 upgradeUuid = "1E2A89BD-44C6-4A7E-A55D-AB92947F6047"
                 iconFile.set(project.file("app/icon.ico"))
             }
-            linux {
-                // Linux specific options
-            }
+            linux { }
         }
     }
 }

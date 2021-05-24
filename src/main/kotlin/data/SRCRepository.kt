@@ -9,8 +9,11 @@ import data.remote.responses.GameResponse
 import data.remote.responses.RunResponse
 import data.utils.LeaderboardStyle
 import data.utils.RunSortDirection
-import data.utils.RunSortDiscriminator
+import data.utils.RunSortDiscriminator.*
+import data.utils.RunSortDiscriminator.Category
+import data.utils.RunSortDiscriminator.Level
 import data.utils.SearchQueryTarget
+import data.utils.SearchQueryTarget.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -93,20 +96,18 @@ class SRCRepository(
         }.sortedWith { run1, run2 ->
             // TODO the main shortcoming is that stuff is compared by their id instead of their visible name
             when (settings.runSortDiscriminator) {
-                RunSortDiscriminator.Game -> run1.gameId.value.compareTo(run2.gameId.value)
-                RunSortDiscriminator.Category -> run1.categoryId.value.compareTo(run2.categoryId.value)
-                RunSortDiscriminator.Level -> (run1.levelId?.value ?: "").compareTo(run2.levelId?.value ?: "")
-                RunSortDiscriminator.Platform -> (run1.platformId?.value ?: "").compareTo(run2.platformId?.value ?: "")
-                RunSortDiscriminator.Region -> (run1.regionId?.value ?: "").compareTo(run2.regionId?.value ?: "")
-                RunSortDiscriminator.IsEmulated -> run1.isEmulated.compareTo(run2.isEmulated)
-                RunSortDiscriminator.PrimaryTime -> run1.primaryTime.compareTo(run2.primaryTime)
-                RunSortDiscriminator.RunDate -> (run1.runDate ?: Date(0)).compareTo(run2.runDate ?: Date(0))
-                RunSortDiscriminator.SubmissionDate -> (run1.submissionDate ?: Date(0))
-                    .compareTo(run2.submissionDate ?: Date(0))
-                RunSortDiscriminator.VerificationDate -> (run1.verificationDate ?: Date(0))
-                    .compareTo(run2.verificationDate ?: Date(0))
-                RunSortDiscriminator.Status -> run1.runStatus.compareTo(run2.runStatus)
-                RunSortDiscriminator.PlayerCount -> run1.players.size.compareTo(run2.players.size)
+                Game -> run1.gameId.value.compareTo(run2.gameId.value)
+                Category -> run1.categoryId.value.compareTo(run2.categoryId.value)
+                Level -> (run1.levelId?.value ?: "").compareTo(run2.levelId?.value ?: "")
+                Platform -> (run1.platformId?.value ?: "").compareTo(run2.platformId?.value ?: "")
+                Region -> (run1.regionId?.value ?: "").compareTo(run2.regionId?.value ?: "")
+                IsEmulated -> run1.isEmulated.compareTo(run2.isEmulated)
+                PrimaryTime -> run1.primaryTime.compareTo(run2.primaryTime)
+                RunDate -> (run1.runDate ?: Date(0)).compareTo(run2.runDate ?: Date(0))
+                SubmissionDate -> (run1.submissionDate ?: Date(0)).compareTo(run2.submissionDate ?: Date(0))
+                VerificationDate -> (run1.verificationDate ?: Date(0)).compareTo(run2.verificationDate ?: Date(0))
+                Status -> run1.runStatus.compareTo(run2.runStatus)
+                PlayerCount -> run1.players.size.compareTo(run2.players.size)
             }.times(
                 when (settings.runSortDirection) {
                     RunSortDirection.Ascending -> 1
@@ -144,16 +145,14 @@ class SRCRepository(
         }
     }
 
-    private fun String.filter(run: Run, searchQueryTarget: SearchQueryTarget?): Boolean {
+    private fun String.filter(run: Run, searchQueryTarget: SearchQueryTarget): Boolean {
         if (this.isBlank()) return true
         return when (searchQueryTarget) {
-            SearchQueryTarget.PlayerNames -> run.players.joinToString(" ") { it.name }
-                .contains(other = this, ignoreCase = true)
-            SearchQueryTarget.CountryCodes -> run.players.joinToString { it.countryCode ?: "" }
-                .contains(other = this, ignoreCase = true)
-            SearchQueryTarget.Comment -> run.comment?.contains(other = this, ignoreCase = true) ?: false
-            SearchQueryTarget.RejectionReason -> run.rejectionReason?.contains(other = this, ignoreCase = true) ?: false
-            null -> run.players.joinToString(" ") { it.name }.contains(other = this, ignoreCase = true)
+            PlayerNames -> run.players.joinToString(" ") { it.name }.contains(other = this, ignoreCase = true)
+            CountryCodes -> run.players.joinToString { it.countryCode ?: "" }.contains(other = this, ignoreCase = true)
+            Comment -> run.comment?.contains(other = this, ignoreCase = true) ?: false
+            RejectionReason -> run.rejectionReason?.contains(other = this, ignoreCase = true) ?: false
+            Everywhere -> run.players.joinToString(" ") { it.name }.contains(other = this, ignoreCase = true)
                     || run.comment?.contains(other = this, ignoreCase = true) ?: false
                     || run.rejectionReason?.contains(other = this, ignoreCase = true) ?: false
         }

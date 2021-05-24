@@ -18,9 +18,11 @@ import ui.screens.home.HomeScreen
 import ui.screens.splash.SplashScreen
 import ui.theme.SRCClientTheme
 import java.awt.Dimension
+import java.awt.Toolkit
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
+import kotlin.math.roundToInt
 
 fun main() = Window(
     title = "SRC Client by Kohru",
@@ -29,11 +31,13 @@ fun main() = Window(
     } catch (e: Exception) {
         BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB)
     },
-    size = IntSize(1200, 900)
+    size = Toolkit.getDefaultToolkit().screenSize.run {
+        IntSize(1200.coerceAtMost((width * 0.9).roundToInt()), 900.coerceAtMost((height * 0.9).roundToInt()))
+    }
 ) {
     AppManager.windows[0].window.minimumSize = Dimension(600, 600)
 
-    System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "TRACE")
+//    System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "TRACE")
 
     startKoin {
         modules(module {
