@@ -130,7 +130,10 @@ private fun GlobalFilters(
     settings: Settings,
     onFiltersChanged: (Settings) -> Unit
 ) {
-    FlowRow(horizontalGap = 24.dp) {
+    FlowRow(
+        horizontalGap = 24.dp,
+        verticalGap = 8.dp,
+    ) {
         // Category filter TODO add level support
         SettingComponent(
             title = "Category",
@@ -217,7 +220,10 @@ private fun SortingComponent(
     settings: Settings,
     onSortingChanged: (Settings) -> Unit
 ) {
-    FlowRow(horizontalGap = 24.dp) {
+    FlowRow(
+        horizontalGap = 24.dp,
+        verticalGap = 8.dp,
+    ) {
         val runSortDiscriminators = RunSortDiscriminator.values().toList()
         val selectedRunSortDiscriminator = settings.runSortDiscriminator
         SettingComponent(

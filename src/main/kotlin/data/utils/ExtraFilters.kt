@@ -16,6 +16,7 @@ enum class LeaderboardStyle(override val uiString: String) : Displayable {
 
 enum class SearchQueryTarget(override val uiString: String) : Displayable {
     PlayerNames("Player names"),
+    CountryCodes("Country codes (ISO 2)"),
     Comment("Comment"),
     RejectionReason("Rejection reason")
 }

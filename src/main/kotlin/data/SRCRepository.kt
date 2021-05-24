@@ -149,6 +149,8 @@ class SRCRepository(
         return when (searchQueryTarget) {
             SearchQueryTarget.PlayerNames -> run.players.joinToString(" ") { it.name }
                 .contains(other = this, ignoreCase = true)
+            SearchQueryTarget.CountryCodes -> run.players.joinToString { it.countryCode ?: "" }
+                .contains(other = this, ignoreCase = true)
             SearchQueryTarget.Comment -> run.comment?.contains(other = this, ignoreCase = true) ?: false
             SearchQueryTarget.RejectionReason -> run.rejectionReason?.contains(other = this, ignoreCase = true) ?: false
             null -> run.players.joinToString(" ") { it.name }.contains(other = this, ignoreCase = true)
