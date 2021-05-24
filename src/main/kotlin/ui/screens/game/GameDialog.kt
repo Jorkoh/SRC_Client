@@ -177,12 +177,12 @@ fun GameSelectorSearchField(
             Text("Game")
         },
         modifier = Modifier.onFocusChanged { newFocusState ->
-            if (newFocusState.isFocused && uiState.value is GameSelectorUIState.NotSearching) {
+            if (newFocusState == FocusState.Active && uiState.value is GameSelectorUIState.NotSearching) {
                 onSearchStarted()
-            } else if (!newFocusState.isFocused && uiState.value !is GameSelectorUIState.NotSearching) {
+            } else if (newFocusState == FocusState.Inactive && uiState.value !is GameSelectorUIState.NotSearching) {
                 onSearchStopped()
             }
-            setSearchFieldIsFocused(newFocusState.isFocused)
+            setSearchFieldIsFocused(newFocusState == FocusState.Active)
         }.fillMaxWidth(),
     )
 }
