@@ -4,7 +4,7 @@ Alternative client for [speedrun.com](https://www.speedrun.com/) using their [AP
 
 
 ## Screenshots
-<img src="/screenshots/sample1.png">&emsp;<img src="/screenshots/sample2.png" width="260">
+<img src="/screenshots/sample1.png" height="400">&emsp;<img src="/screenshots/sample2.png" height="400">
 
 ## License
 Please read the [license file](LICENSE.md). All original content provided through the API is licensed under CC-BY-NC 4.0. Images and videos are copyright of their respective owners.
