@@ -58,6 +58,11 @@ private fun RefreshButton(
     enabled: Boolean,
     onClick: () -> Unit
 ) {
+    val alpha: Float by animateFloatAsState(
+        targetValue = if(enabled) 0.65f else ContentAlpha.disabled,
+        animationSpec = spring(stiffness = Spring.StiffnessLow)
+    )
+
     IconButton(
         enabled = enabled,
         onClick = onClick
@@ -65,7 +70,7 @@ private fun RefreshButton(
         Icon(
             imageVector = Icons.Default.Refresh,
             contentDescription = "Refresh game",
-            tint = LocalContentColor.current.copy(alpha = 0.65f)
+            tint = LocalContentColor.current.copy(alpha = alpha)
         )
     }
 }

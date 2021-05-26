@@ -49,14 +49,14 @@ fun RunListSection(
         scaffoldState = scaffoldState,
         gesturesEnabled = false,
         appBar = {
-            val gameName = (uiState.value as? HomeUIState.Ready)?.game?.name ?: "Loading game..."
-            val runCount = ((uiState.value as? HomeUIState.Ready)?.runsUIState as? LoadedRuns)?.runs?.size
+            val gameName = uiState.value.game?.name ?: "Loading game..."
+            val runCount = (uiState.value.runsUIState as? LoadedRuns)?.runs?.size
             RunListTopAppBar(
                 gameName = gameName,
                 runCount = runCount,
                 changeButtonColored = uiState.value.gameSelectorIsOpen,
                 onChangeGameButtonClicked = onChangeGameButtonClicked,
-                refreshButtonEnabled = uiState.value is HomeUIState.Ready,
+                refreshButtonEnabled = uiState.value.isRefreshAvailable,
                 onRefreshButtonClicked = onRefreshButtonClicked,
                 filterButtonColored = scaffoldState.targetValue == BackdropValue.Revealed,
                 onFiltersButtonClicked = {

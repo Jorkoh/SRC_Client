@@ -42,6 +42,8 @@ interface SRCService {
         @Query("orderby") orderBy: String? = null,
         @Query("direction") direction: String? = null,
         @Query("offset") offset: Int? = null,
+        // Get around the cache
+        @Query("uniquifier") uniquifier: Long? = null,
         // Fixed query params
         @Query("embed") embed: String = "players",
         @Query("max") max: Int = PAGINATION_MAX,

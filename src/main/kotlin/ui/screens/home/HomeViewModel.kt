@@ -6,6 +6,7 @@ import data.local.entities.FullGame
 import data.local.entities.Run
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -25,80 +26,107 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
     init {
         scope.launch {
             gamesDAO.getSelectedGame().collect { newSelectedGame ->
-                if (homeUIState.value.gameId != newSelectedGame.id) {
-                    onSelectedGameChanged(newSelectedGame.id)
+                if (homeUIState.value.game?.gameId != newSelectedGame.id) {
+                    refreshGame(newSelectedGame.id)
                 }
             }
         }
         scope.launch {
             runsDAO.getSelectedRunId().collect { newSelectedRunId ->
-                setHasRunSelected(newSelectedRunId != null)
+                _homeUIState.value = _homeUIState.value.copy(hasRunSelected = newSelectedRunId != null)
             }
         }
     }
 
-    private val _homeUIState = MutableStateFlow<HomeUIState>(HomeUIState.LoadingGame())
+    private val _homeUIState = MutableStateFlow(
+        HomeUIState(
+            game = null,
+            hasRunSelected = false,
+            gameSelectorIsOpen = false,
+            isRefreshAvailable = false,
+            settingsUIState = HomeUIState.SettingsUIState.LoadingSettings,
+            runsUIState = HomeUIState.RunsUIState.LoadingRuns
+        )
+    )
     val homeUIState: StateFlow<HomeUIState> = _homeUIState
 
-    private lateinit var fullGame: FullGame // lateinit kinda yikes
-
     private var fullGameJob: Job? = null
-    private var runsQueryJob: Job? = null
+    private var refreshAvailableJob: Job? = null
 
-    private fun onSelectedGameChanged(newSelectedGameId: GameId) {
+    private fun refreshGame(newGameId: GameId) {
         fullGameJob?.cancel()
-        runsQueryJob?.cancel()
 
-        if (homeUIState.value.settingsUIState is HomeUIState.SettingsUIState.LoadedSettings) {
-            /*
-             Reset the game filters if they were already loaded, this is iffy but resetting
-             after loading new ones and checking for validity wasn't updating the query flow :/
-             */
-            settingsDAO.resetGameSpecificSettings()
+
+        val gameChanged = _homeUIState.value.game?.gameId != newGameId
+
+        if (gameChanged) {
+            _homeUIState.value = _homeUIState.value.copy(
+                game = null,
+                runsUIState = HomeUIState.RunsUIState.LoadingRuns,
+                settingsUIState = HomeUIState.SettingsUIState.LoadingSettings
+            )
+            if (homeUIState.value.settingsUIState is HomeUIState.SettingsUIState.LoadedSettings) {
+                settingsDAO.resetGameSpecificSettings()
+            }
+        } else {
+            _homeUIState.value = _homeUIState.value.copy(runsUIState = HomeUIState.RunsUIState.LoadingRuns)
         }
 
-        _homeUIState.value = HomeUIState.LoadingGame(
-            gameId = newSelectedGameId,
-            hasRunSelected = _homeUIState.value.hasRunSelected,
-            gameSelectorIsOpen = _homeUIState.value.gameSelectorIsOpen
-        )
         fullGameJob = scope.launch {
-            fullGame = srcRepository.getFullGame(newSelectedGameId).first()
-            _homeUIState.value = HomeUIState.Ready(
-                game = fullGame,
-                settingsUIState = _homeUIState.value.settingsUIState,
-                runsUIState = _homeUIState.value.runsUIState,
-                hasRunSelected = _homeUIState.value.hasRunSelected,
-                gameSelectorIsOpen = _homeUIState.value.gameSelectorIsOpen
-            )
+            if (gameChanged) {
+                val game = srcRepository.getFullGame(newGameId).first()
+                _homeUIState.value = _homeUIState.value.copy(game = game)
+            }
+
+            restartRefreshAvailableCooldown()
+            srcRepository.cacheRuns(newGameId)
             observeSettings()
         }
     }
 
     private suspend fun observeSettings() {
         settingsDAO.getSettings().collect { settings ->
-            (homeUIState.value as? HomeUIState.Ready)?.game?.let { game ->
-                setSettingsUIState(HomeUIState.SettingsUIState.LoadedSettings(settings, game))
-                refreshRuns()
-            }
-        }
-    }
-
-    private fun refreshRuns() {
-        runsQueryJob?.cancel()
-        (homeUIState.value.settingsUIState as? HomeUIState.SettingsUIState.LoadedSettings)?.let { loadedSettings ->
-            setRunsUIState(HomeUIState.RunsUIState.LoadingRuns)
-            runsQueryJob = scope.launch {
-                val runs = srcRepository.getCachedRuns(
-                    settings = loadedSettings.settings
+            homeUIState.value.game?.let { game ->
+                // Could pass the raw runs here from refresh games to derive settings from them
+                _homeUIState.value = _homeUIState.value.copy(
+                    settingsUIState = HomeUIState.SettingsUIState.LoadedSettings(settings, game)
                 )
-                setRunsUIState(HomeUIState.RunsUIState.LoadedRuns(runs, loadedSettings.game))
+                filterRuns()
             }
         }
     }
 
-    fun refreshGame() {
-        (homeUIState.value as? HomeUIState.Ready)?.game?.gameId?.let { onSelectedGameChanged(it) }
+    private suspend fun filterRuns() {
+        (homeUIState.value.settingsUIState as? HomeUIState.SettingsUIState.LoadedSettings)?.let { loadedSettings ->
+            _homeUIState.value = _homeUIState.value.copy(runsUIState = HomeUIState.RunsUIState.LoadingRuns)
+            val runs = srcRepository.getFilteredCachedRuns(loadedSettings.settings)
+            _homeUIState.value = _homeUIState.value.copy(
+                runsUIState = HomeUIState.RunsUIState.LoadedRuns(runs, loadedSettings.game)
+            )
+        }
+    }
+
+    private fun restartRefreshAvailableCooldown() {
+        refreshAvailableJob?.cancel()
+        refreshAvailableJob = scope.launch {
+            _homeUIState.value = _homeUIState.value.copy(isRefreshAvailable = false)
+            delay(REFRESH_AVAILABLE_COOLDOWN)
+            _homeUIState.value = _homeUIState.value.copy(isRefreshAvailable = true)
+        }
+    }
+
+    fun openGameSelector() {
+        _homeUIState.value = _homeUIState.value.copy(gameSelectorIsOpen = true)
+    }
+
+    fun closeGameSelector() {
+        _homeUIState.value = _homeUIState.value.copy(gameSelectorIsOpen = false)
+    }
+
+    fun refreshRuns() {
+        _homeUIState.value.game?.gameId?.let {
+            refreshGame(it)
+        }
     }
 
     fun changeSettings(newSettings: Settings) {
@@ -109,107 +137,22 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
         runsDAO.selectRun(runId)
     }
 
-/* UTILS STUFF TO MANAGE STATE CLASS */
-
-    private fun setSettingsUIState(settingsUIState: HomeUIState.SettingsUIState) {
-        _homeUIState.value = when (val previous = _homeUIState.value) {
-            is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(
-                hasRunSelected = previous.hasRunSelected,
-                gameSelectorIsOpen = previous.gameSelectorIsOpen
-            )
-            is HomeUIState.Ready -> HomeUIState.Ready(
-                game = previous.game,
-                settingsUIState = settingsUIState,
-                runsUIState = previous.runsUIState,
-                hasRunSelected = previous.hasRunSelected,
-                gameSelectorIsOpen = previous.gameSelectorIsOpen
-            )
-        }
-    }
-
-    private fun setRunsUIState(runsUIState: HomeUIState.RunsUIState) {
-        _homeUIState.value = when (val previous = _homeUIState.value) {
-            is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(
-                hasRunSelected = previous.hasRunSelected,
-                gameSelectorIsOpen = previous.gameSelectorIsOpen
-            )
-            is HomeUIState.Ready -> HomeUIState.Ready(
-                game = previous.game,
-                settingsUIState = previous.settingsUIState,
-                runsUIState = runsUIState,
-                hasRunSelected = previous.hasRunSelected,
-                gameSelectorIsOpen = previous.gameSelectorIsOpen
-            )
-        }
-    }
-
-    fun setHasRunSelected(hasRunSelected: Boolean) {
-        _homeUIState.value = when (val previous = _homeUIState.value) {
-            is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(
-                hasRunSelected = hasRunSelected,
-                gameSelectorIsOpen = previous.gameSelectorIsOpen
-            )
-            is HomeUIState.Ready -> HomeUIState.Ready(
-                settingsUIState = previous.settingsUIState,
-                runsUIState = previous.runsUIState,
-                game = previous.game,
-                hasRunSelected = hasRunSelected,
-                gameSelectorIsOpen = previous.gameSelectorIsOpen
-            )
-        }
-    }
-
-    fun setGameSelectorIsOpen(isOpen: Boolean) {
-        _homeUIState.value = when (val previous = _homeUIState.value) {
-            is HomeUIState.LoadingGame -> HomeUIState.LoadingGame(
-                hasRunSelected = previous.hasRunSelected,
-                gameSelectorIsOpen = isOpen
-            )
-            is HomeUIState.Ready -> HomeUIState.Ready(
-                settingsUIState = previous.settingsUIState,
-                runsUIState = previous.runsUIState,
-                game = previous.game,
-                hasRunSelected = previous.hasRunSelected,
-                gameSelectorIsOpen = isOpen
-            )
-        }
+    companion object {
+        const val REFRESH_AVAILABLE_COOLDOWN = 60000L
     }
 }
 
-// TODO figure out a proper state nesting solution, right now it's pretty awkward
-sealed class HomeUIState(
-    val gameId: GameId?,
-    val settingsUIState: SettingsUIState,
-    val runsUIState: RunsUIState,
+data class HomeUIState(
+    val game: FullGame?,
     val hasRunSelected: Boolean,
     val gameSelectorIsOpen: Boolean,
+    val isRefreshAvailable: Boolean,
+    val settingsUIState: SettingsUIState,
+    val runsUIState: RunsUIState,
 ) {
-    class LoadingGame(
-        gameId: GameId? = null,
-        hasRunSelected: Boolean = false,
-        gameSelectorIsOpen: Boolean = false
-    ) : HomeUIState(
-        gameId,
-        SettingsUIState.LoadingSettings,
-        RunsUIState.LoadingRuns,
-        hasRunSelected,
-        gameSelectorIsOpen
-    )
-
-    class Ready(
-        val game: FullGame,
-        settingsUIState: SettingsUIState,
-        runsUIState: RunsUIState,
-        hasRunSelected: Boolean,
-        gameSelectorIsOpen: Boolean = false
-    ) : HomeUIState(game.gameId, settingsUIState, runsUIState, hasRunSelected, gameSelectorIsOpen)
-
     sealed class SettingsUIState {
         object LoadingSettings : SettingsUIState()
-        class LoadedSettings(
-            val settings: Settings,
-            val game: FullGame
-        ) : SettingsUIState()
+        class LoadedSettings(val settings: Settings, val game: FullGame) : SettingsUIState()
     }
 
     sealed class RunsUIState {

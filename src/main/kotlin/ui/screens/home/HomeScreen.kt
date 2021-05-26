@@ -18,9 +18,9 @@ fun HomeScreen() {
     HomeScreenContent(
         uiState = viewModel.homeUIState.collectAsState(),
         scope = scope,
-        onChangeGameButtonClicked = { viewModel.setGameSelectorIsOpen(true) },
-        onChangeGameDialogDismissed = { viewModel.setGameSelectorIsOpen(false) },
-        onRefreshButtonClicked = viewModel::refreshGame,
+        onChangeGameButtonClicked = viewModel::openGameSelector,
+        onChangeGameDialogDismissed = viewModel::closeGameSelector,
+        onRefreshButtonClicked = viewModel::refreshRuns,
         onSettingsChanged = viewModel::changeSettings,
         onRunSelected = viewModel::selectRun
     )

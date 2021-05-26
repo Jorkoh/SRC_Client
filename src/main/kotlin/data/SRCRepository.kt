@@ -30,7 +30,6 @@ class SRCRepository(
     fun getGames(query: String) = gamesDAO.getGames(query)
 
     fun getFullGame(gameId: GameId) = flow {
-        cacheRuns(gameId)
         val fullGame = srcService.fetchFullGame(gameId = gameId.value).fullGameResponse.toFullGame()
         emit(fullGame)
     }
@@ -62,16 +61,21 @@ class SRCRepository(
             }
         }.flowOn(Dispatchers.IO)
 
-    private suspend fun cacheRuns(gameId: GameId) {
+    suspend fun cacheRuns(gameId: GameId) {
         val runs = mutableListOf<Run>()
         var currentOffset = 0
+
+        // Gets around the cache by making the request unique
+        val requestUniquifier = Date().time
+
         do {
             val responses = coroutineScope {
                 val requests = Array(SRCService.PARALLEL_REQUESTS) { i ->
                     async {
                         srcService.fetchRuns(
                             gameId = gameId.value,
-                            offset = currentOffset + i * SRCService.PAGINATION_MAX
+                            offset = currentOffset + i * SRCService.PAGINATION_MAX,
+                            uniquifier = requestUniquifier
                         )
                     }
                 }
@@ -85,7 +89,7 @@ class SRCRepository(
         cachedRuns = runs
     }
 
-    suspend fun getCachedRuns(
+    suspend fun getFilteredCachedRuns(
         settings: Settings
     ) = withContext(Dispatchers.Default) {
         cachedRuns.filter { run ->
