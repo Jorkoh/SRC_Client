@@ -15,8 +15,4 @@ data class LevelResponse(
     val rules: String?,
     @Json(name = "links")
     val links: List<Link>,
-
-    // THIS PROPERTY REQUIRES THE EMBED PARAMETER IN REQUEST
-    @Json(name = "variables")
-    val variables : Variables
 )

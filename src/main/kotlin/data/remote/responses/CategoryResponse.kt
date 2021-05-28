@@ -27,7 +27,7 @@ data class CategoryResponse(
 
     // THIS PROPERTY REQUIRES THE EMBED PARAMETER IN REQUEST
     @Json(name = "variables")
-    val variables : Variables
+    val variables : Variables?
 )
 
 @JsonClass(generateAdapter = true)

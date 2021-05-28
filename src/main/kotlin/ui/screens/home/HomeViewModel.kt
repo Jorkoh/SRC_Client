@@ -59,12 +59,15 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
         val gameChanged = _homeUIState.value.game?.gameId != newGameId
 
         if (gameChanged) {
+            val loadedSettings = _homeUIState.value.settingsUIState is HomeUIState.SettingsUIState.LoadedSettings
             _homeUIState.value = _homeUIState.value.copy(
                 game = null,
                 runsUIState = HomeUIState.RunsUIState.LoadingRuns,
                 settingsUIState = HomeUIState.SettingsUIState.LoadingSettings
             )
-            settingsDAO.resetGameSpecificSettings()
+            if (loadedSettings) {
+                settingsDAO.resetGameSpecificSettings()
+            }
         } else {
             _homeUIState.value = _homeUIState.value.copy(runsUIState = HomeUIState.RunsUIState.LoadingRuns)
         }

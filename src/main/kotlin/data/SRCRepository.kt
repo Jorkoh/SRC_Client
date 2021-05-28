@@ -2,6 +2,7 @@ package data
 
 import data.local.GameId
 import data.local.GamesDAO
+import data.local.LevelId
 import data.local.RunId
 import data.local.entities.*
 import data.remote.SRCService
@@ -19,8 +20,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import persistence.database.Game
 import persistence.database.Settings
+import retrofit2.HttpException
 import java.util.*
 
+// TODO proper error handling
 class SRCRepository(
     private val gamesDAO: GamesDAO,
     private val srcService: SRCService
@@ -94,6 +97,7 @@ class SRCRepository(
     ) = withContext(Dispatchers.Default) {
         cachedRuns.filter { run ->
             (settings.runStatus?.filter(run) ?: true)
+                    && (settings.levelId.filter(run))
                     && (settings.categoryId?.let { run.categoryId == it } ?: true)
                     && (settings.verifierId?.let { run.verifierId == it } ?: true)
                     && settings.variablesAndValuesIds.filter(run)
@@ -144,6 +148,12 @@ class SRCRepository(
         run.runStatus == this
     }
 
+    private fun LevelId?.filter(run: Run) = when (this) {
+        null -> true
+        LevelId.FullGame -> run.levelId == null
+        else -> run.levelId == this
+    }
+
     private fun List<VariableAndValueIds>.filter(run: Run) = all { (filterVariableId, filterValueId) ->
         run.variablesAndValuesIds.any { (runVariableId, runValueId) ->
             runVariableId == filterVariableId && runValueId == filterValueId
@@ -166,8 +176,11 @@ class SRCRepository(
     fun getFullRun(runId: RunId) = flow {
         val fullRunResponse = srcService.fetchFullRun(runId = runId.value).fullRunResponse
         val verifierResponse = fullRunResponse.status.verifierId?.let {
-            // TODO this may 4xx
-            srcService.fetchUser(it).userResponse
+            try {
+                srcService.fetchUser(it).userResponse
+            } catch (e: HttpException) {
+                null
+            }
         }
         emit(fullRunResponse.toFullRun(verifierResponse))
     }

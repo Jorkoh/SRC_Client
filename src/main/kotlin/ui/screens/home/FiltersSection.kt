@@ -16,6 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
+import data.local.CategoryId
+import data.local.LevelId
 import data.local.entities.*
 import data.utils.LeaderboardStyle
 import data.utils.RunSortDirection
@@ -46,45 +48,73 @@ private fun FiltersContent(
     onFiltersChanged: (Settings) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-        val gameVariables = uiState.game.categories.firstOrNull { it.type == CategoryType.PerGame }
-            ?.variables?.filter { it.categoryId == null }
-        val categories = uiState.game.categories.filter { it.type == CategoryType.PerGame }
-        val selectedCategory = categories.firstOrNull { it.categoryId == uiState.settings.categoryId }
+        // The available categories depend on the selected level (or lack of it)
+        val availableCategories = getAvailableCategories(
+            selectedLevelId = if (uiState.game.levels.isEmpty()) LevelId.FullGame else uiState.settings.levelId,
+            categories = uiState.game.categories
+        )
+        val selectedCategory = availableCategories.firstOrNull { it.categoryId == uiState.settings.categoryId }
+
+        // The available variables depend on the selected level (or lack of it) and the selected category
+        val availableVariables = getAvailableVariables(
+            selectedLevelId = if (uiState.game.levels.isEmpty()) LevelId.FullGame else uiState.settings.levelId,
+            selectedCategoryId = selectedCategory?.categoryId,
+            variables = uiState.game.variables
+        )
 
         // Filter by text
         QueryFilter(uiState.settings, onFiltersChanged)
 
-        // Category, run status, "leaderboard" view
+        // Level, category, run status, verifier and "leaderboard" view
         Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
         GlobalFilters(
-            categories = categories,
+            categories = availableCategories,
             selectedCategory = selectedCategory,
-            gameVariables = gameVariables,
+            levels = uiState.game.levels,
+            variables = uiState.game.variables,
             verifiers = uiState.game.moderators,
             settings = uiState.settings,
             onFiltersChanged = onFiltersChanged
         )
 
-        // Custom leaderboard variables filters from game TODO add level support
-        if (!gameVariables.isNullOrEmpty()) {
-            Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
-            VariablesFilters(gameVariables, uiState.settings, onFiltersChanged)
-        }
-
-        // Custom leaderboard variables filters from selected category
-        val categoryVariables = selectedCategory?.variables?.filter { it.categoryId != null }
-        AnimatedVisibility(!categoryVariables.isNullOrEmpty()) {
-            if (!categoryVariables.isNullOrEmpty()) {
-                Column {
-                    Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
-                    VariablesFilters(categoryVariables, uiState.settings, onFiltersChanged)
-                }
+        // Custom leaderboard variables filters
+        AnimatedVisibility(availableVariables.isNotEmpty()) {
+            Column {
+                Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
+                VariablesFilters(availableVariables, uiState.settings, onFiltersChanged)
             }
         }
 
         // Sorting
         Divider(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp))
         SortingComponent(uiState.settings, onFiltersChanged)
+    }
+}
+
+private fun getAvailableCategories(
+    selectedLevelId: LevelId?,
+    categories: List<Category>
+) = when (selectedLevelId) {
+    null -> categories
+    LevelId.FullGame -> categories.filter { it.type == CategoryType.PerGame }
+    // seems like per-level categories aren't tied to a specific level
+    else -> categories.filter { it.type == CategoryType.PerLevel }
+}
+
+private fun getAvailableVariables(
+    selectedLevelId: LevelId?,
+    selectedCategoryId: CategoryId?,
+    variables: List<Variable>
+) = when (selectedLevelId) {
+    null -> variables.filter { selectedCategoryId == null || it.categoryId == selectedCategoryId }
+    LevelId.FullGame -> variables.filter {
+        (it.scope == VariableScope.Global || it.scope == VariableScope.FullGame)
+                && (selectedCategoryId == null || it.categoryId == null || it.categoryId == selectedCategoryId)
+    }
+    else -> variables.filter {
+        (it.scope == VariableScope.Global || it.scope == VariableScope.AllLevels
+                || (it.scope == VariableScope.SingleLevel && it.levelId == selectedLevelId))
+                && (selectedCategoryId == null || it.categoryId == null || it.categoryId == selectedCategoryId)
     }
 }
 
@@ -133,16 +163,47 @@ private fun QueryFilter(
 private fun GlobalFilters(
     categories: List<Category>,
     selectedCategory: Category?,
-    gameVariables: List<Variable>?,
-    verifiers: List<RegisteredUser>,
+    levels: List<Level>,
+    variables: List<Variable>,
     settings: Settings,
-    onFiltersChanged: (Settings) -> Unit
+    onFiltersChanged: (Settings) -> Unit,
+    verifiers: List<RegisteredUser>
 ) {
     FlowRow(
         horizontalGap = 24.dp,
         verticalGap = 8.dp,
     ) {
-        // Category filter TODO add level support
+        // Level filter
+        if (levels.isNotEmpty()) {
+            val levelsWithFull = listOf(Level.FullGame).plus(levels)
+            val selectedLevel = levelsWithFull.firstOrNull { it.levelId == settings.levelId }
+            SettingComponent(
+                title = "Level",
+                selectedOption = selectedLevel,
+                options = levelsWithFull,
+                onOptionSelected = { newLevel ->
+                    onFiltersChanged(settings.copy(
+                        levelId = newLevel?.levelId,
+                        // Remove category filter if no longer available
+                        categoryId = getAvailableCategories(
+                            selectedLevelId = newLevel?.levelId,
+                            categories = categories
+                        ).firstOrNull { it.categoryId == selectedCategory?.categoryId }?.categoryId,
+                        // Remove all variable filters no longer available
+                        variablesAndValuesIds = settings.variablesAndValuesIds.toMutableList()
+                            .filter { filterVariable ->
+                                getAvailableVariables(
+                                    selectedLevelId = newLevel?.levelId,
+                                    selectedCategoryId = selectedCategory?.categoryId,
+                                    variables = variables
+                                ).any { filterVariable.variableId == it.variableId }
+                            }
+                    ))
+                }
+            )
+        }
+
+        // Category filter
         SettingComponent(
             title = "Category",
             selectedOption = selectedCategory,
@@ -150,10 +211,14 @@ private fun GlobalFilters(
             onOptionSelected = { newCategory ->
                 onFiltersChanged(settings.copy(
                     categoryId = newCategory?.categoryId,
+                    // Remove all variable filters no longer available
                     variablesAndValuesIds = settings.variablesAndValuesIds.toMutableList()
                         .filter { filterVariable ->
-                            // When changing category only keep game variable filters TODO is this its best place?
-                            gameVariables?.any { filterVariable.variableId == it.variableId } ?: false
+                            getAvailableVariables(
+                                selectedLevelId = settings.levelId,
+                                selectedCategoryId = newCategory?.categoryId,
+                                variables = variables
+                            ).any { filterVariable.variableId == it.variableId }
                         }
                 ))
             }

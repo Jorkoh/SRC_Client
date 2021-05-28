@@ -78,7 +78,9 @@ data class FullGameResponse(
     @Json(name = "levels")
     val levels : Levels,
     @Json(name = "categories")
-    val categories : Categories
+    val categories : Categories,
+    @Json(name = "variables")
+    val variables : Variables
 )
 
 @JsonClass(generateAdapter = true)

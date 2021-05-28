@@ -20,6 +20,7 @@ import data.local.RunId
 import data.local.entities.Category
 import data.local.entities.FullGame
 import data.local.entities.Run
+import data.local.entities.Variable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import persistence.database.Settings
@@ -163,12 +164,10 @@ private fun RunItem(
             ) {
                 Text(run.primaryTime.toSRCString() ?: "No time")
                 PlayerNames(players = run.players, displayOnlyFirst = true)
-                run.runDate?.let {
-                    RunDate(it, dateFormat)
-                }
+                RunDate(run.runDate, dateFormat)
             }
             Spacer(Modifier.height(2.dp))
-            CategoryAndVariables(run, game.categories)
+            CategoryAndVariables(run, game.categories, game.variables)
             Spacer(Modifier.height(1.dp))
         }
         Spacer(Modifier.width(16.dp))
@@ -184,23 +183,22 @@ private fun RunItem(
 }
 
 @Composable
-private fun CategoryAndVariables(run: Run, categories: List<Category>) {
+private fun CategoryAndVariables(run: Run, categories: List<Category>, variables: List<Variable>) {
     val category = categories.firstOrNull { it.categoryId == run.categoryId }
 
-    val categoryAndVariablesString = if (category != null) {
-        val valueLabels = run.variablesAndValuesIds.map { runVariableAndValues ->
-            val variable = category.variables.first {
-                it.variableId == runVariableAndValues.variableId
-            }
-            val value = variable.values.first {
-                it.valueId == runVariableAndValues.valueId
-            }
-            Pair(variable, value)
-        }.sortedByDescending { it.first.isSubCategory }.map { it.second.label }
-        "${category.name}${if (valueLabels.isNotEmpty()) " - " else ""}${valueLabels.joinToString()}"
-    } else {
-        "Category not part of game categories"
-    }
+    val valueLabels = run.variablesAndValuesIds.map { runVariableAndValues ->
+        val variable = variables.firstOrNull {
+            it.variableId == runVariableAndValues.variableId
+        }
+        val value = variable?.values?.firstOrNull {
+            it.valueId == runVariableAndValues.valueId
+        }
+        Pair(variable, value)
+    }.sortedByDescending { it.first?.isSubCategory ?: false }.map { it.second?.label ?: "Unknown variable" }
+
+    val variablesString = "${if (valueLabels.isNotEmpty()) " - " else ""}${valueLabels.joinToString()}"
+    val categoryAndVariablesString = "${category?.name ?: "Unknown category"}$variablesString"
+
     Text(
         text = categoryAndVariablesString,
         maxLines = 1,
@@ -210,10 +208,10 @@ private fun CategoryAndVariables(run: Run, categories: List<Category>) {
 
 @Composable
 private fun RunDate(
-    runDate: Date,
+    runDate: Date?,
     dateFormat: SimpleDateFormat
 ) {
-    Text(dateFormat.format(runDate))
+    Text(if (runDate != null) dateFormat.format(runDate) else "Unknown date")
 }
 
 @Composable

@@ -49,7 +49,7 @@ data class FullRun(
     val runId: RunId,
 
     val gameId: GameId,
-    val levelId: LevelId?,
+    val level: Level?,
     val category: Category,
     val variablesAndValuesIds: List<VariableAndValueIds>,
 

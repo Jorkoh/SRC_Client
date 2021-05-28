@@ -126,6 +126,7 @@ private fun LoadedRun(run: FullRun) {
         Section {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Times(run.primaryTime, run.realTime, run.realTimeNoLoads, run.inGameTime)
+                run.level?.let { Level(it) }
                 CategoryAndVariables(run.category, run.variablesAndValuesIds)
                 Players(run.players)
                 Status(
@@ -171,6 +172,15 @@ private fun Times(
                 Text("IGT $it")
             }
         }
+    }
+}
+
+@Composable
+private fun Level(level: Level) {
+    Row {
+        Text("Level:")
+        Spacer(Modifier.width(16.dp))
+        Text(level.name)
     }
 }
 

@@ -26,7 +26,11 @@ inline class VariableId(val value: String)
 
 @Serializable
 inline class ValueId(val value: String)
-inline class LevelId(val value: String)
+inline class LevelId(val value: String){
+    companion object{
+        val FullGame = LevelId("")
+    }
+}
 inline class RunId(val value: String)
 inline class UserId(val value: String)
 inline class GameTypeId(val value: String)
@@ -60,6 +64,10 @@ class DatabaseSingleton {
             override fun decode(databaseValue: String) = UserId(databaseValue)
             override fun encode(value: UserId) = value.value
         }
+        val levelIdAdapter = object : ColumnAdapter<LevelId, String> {
+            override fun decode(databaseValue: String) = LevelId(databaseValue)
+            override fun encode(value: LevelId) = value.value
+        }
         val categoryIdAdapter = object : ColumnAdapter<CategoryId, String> {
             override fun decode(databaseValue: String) = CategoryId(databaseValue)
             override fun encode(value: CategoryId) = value.value
@@ -75,6 +83,7 @@ class DatabaseSingleton {
                 searchQueryTargetAdapter = EnumColumnAdapter(),
                 runStatusAdapter = EnumColumnAdapter(),
                 verifierIdAdapter = userIdAdapter,
+                levelIdAdapter = levelIdAdapter,
                 categoryIdAdapter = categoryIdAdapter,
                 leaderboardStyleAdapter = EnumColumnAdapter(),
                 variablesAndValuesIdsAdapter = variablesAndValuesIdsAdapter,

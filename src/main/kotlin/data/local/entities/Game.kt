@@ -37,6 +37,7 @@ data class FullGame(
     val moderators: List<RegisteredUser>,
     val levels : List<Level>,
     val categories: List<Category>,
+    val variables: List<Variable>,
 
     val weblink: String
 )

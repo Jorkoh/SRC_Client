@@ -33,6 +33,7 @@ fun FullGameResponse.toFullGame() = FullGame(
     moderators = moderators.values.map { it.toUser() as RegisteredUser },
     levels = levels.values.map(LevelResponse::toLevel),
     categories = categories.values.map(CategoryResponse::toCategory),
+    variables = variables.values.map(VariableResponse::toVariable),
     weblink = weblink
 )
 
@@ -41,7 +42,6 @@ fun LevelResponse.toLevel() = Level(
     levelId = LevelId(id),
     name = name,
     rules = rules,
-    variables = variables.values.map(VariableResponse::toVariable),
     weblink = weblink
 )
 
@@ -54,7 +54,7 @@ fun CategoryResponse.toCategory() = Category(
     playerCountType = playerCount.type,
     playerCount = playerCount.value,
     isMiscellaneous = isMiscellaneous,
-    variables = variables.values.map(VariableResponse::toVariable),
+    variables = variables?.values?.map(VariableResponse::toVariable) ?: emptyList(),
     weblink = weblink
 )
 
@@ -64,6 +64,7 @@ fun VariableResponse.toVariable() = Variable(
     name = name,
     categoryId = categoryId?.let(::CategoryId),
     scope = scope.value,
+    levelId = scope.levelId?.let(::LevelId),
     isMandatory = mandatory,
     isUserDefined = userDefined,
     isSubCategory = isSubCategory,
@@ -111,7 +112,7 @@ fun FullRunResponse.toFullRun(verifier: UserResponse?) = FullRun(
     runId = RunId(id),
     gameId = GameId(gameId),
     category = category.value.toCategory(),
-    levelId = levelId?.let(::LevelId),
+    level = level.value?.let(LevelResponse::toLevel),
     variablesAndValuesIds = variablesAndValues.variablesAndValues.map {
         VariableAndValueIds(VariableId(it.variableId), ValueId(it.valueId))
     },

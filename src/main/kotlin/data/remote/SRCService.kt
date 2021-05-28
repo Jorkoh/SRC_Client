@@ -5,6 +5,7 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import data.remote.adapters.*
 import data.remote.responses.*
+import data.remote.utils.LoggerInterceptor
 import data.remote.utils.UserAgentInterceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -21,7 +22,7 @@ interface SRCService {
     suspend fun fetchFullGame(
         @Path("id") gameId: String,
         // Fixed query params
-        @Query("embed") embed: String = "categories.variables,moderators,levels.variables",
+        @Query("embed") embed: String = "moderators,categories,levels,variables",
     ): PaginatedFullGameResponse
 
     // https://github.com/speedruncomorg/api/blob/master/version1/games.md#get-games
@@ -54,7 +55,7 @@ interface SRCService {
     suspend fun fetchFullRun(
         @Path("runId") runId: String,
         // Fixed query params
-        @Query("embed") embed: String = "players,category.variables"
+        @Query("embed") embed: String = "players,category.variables,level"
     ): PaginatedFullRunResponse
 
     // https://github.com/speedruncomorg/api/blob/master/version1/users.md#get-usersid
@@ -87,6 +88,7 @@ interface SRCService {
                             .add(VariableScopeAdapter())
                             .add(CategoryTypeAdapter())
                             .add(ValuesAdapter())
+                            .add(RunLevelAdapter())
                             .add(StatusAdapter())
                             .add(RoleAdapter())
                             .add(VariablesAndValuesAdapter())

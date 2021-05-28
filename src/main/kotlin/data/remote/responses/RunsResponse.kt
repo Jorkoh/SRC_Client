@@ -2,6 +2,7 @@ package data.remote.responses
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import data.local.entities.Level
 import data.local.entities.RunStatus
 import java.util.*
 
@@ -137,7 +138,7 @@ data class FullRunResponse(
     @Json(name = "category")
     val category: RunCategory,
     @Json(name = "level")
-    val levelId: String?,
+    val level: RunLevel,
     @Json(name = "values")
     val variablesAndValues: VariablesAndValuesResponses,
 
@@ -165,6 +166,10 @@ data class FullRunResponse(
 @JsonClass(generateAdapter = true)
 data class RunCategory(
     @Json(name = "data")
-    val value : CategoryResponse
+    val value: CategoryResponse
+)
+
+data class RunLevel(
+    val value: LevelResponse?
 )
 

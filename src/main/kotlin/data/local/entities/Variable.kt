@@ -1,6 +1,7 @@
 package data.local.entities
 
 import data.local.CategoryId
+import data.local.LevelId
 import data.local.ValueId
 import data.local.VariableId
 import kotlinx.serialization.Serializable
@@ -19,6 +20,7 @@ data class Variable (
 
     val categoryId: CategoryId?,
     val scope: VariableScope,
+    val levelId: LevelId?,
 
     val isMandatory : Boolean,
     val isUserDefined : Boolean,
