@@ -1,6 +1,7 @@
 package data.local.entities
 
 import data.local.UserId
+import ui.screens.home.Displayable
 
 enum class Role(val apiString: String) {
     Banned("banned"),
@@ -11,9 +12,12 @@ enum class Role(val apiString: String) {
     Programmer("programmer")
 }
 
-interface User{
+interface User : Displayable{
     val name : String
     val countryCode : String?
+
+    override val uiString: String
+        get() = name
 }
 
 data class RegisteredUser(

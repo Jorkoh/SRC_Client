@@ -50,7 +50,7 @@ fun RunListSection(
         gesturesEnabled = false,
         appBar = {
             val gameName = uiState.value.game?.name ?: "Loading game..."
-            val runCount = (uiState.value.runsUIState as? LoadedRuns)?.runs?.size
+            val runCount = (uiState.value.runsUIState as? LoadedRuns)?.runs?.size ?: -1
             RunListTopAppBar(
                 gameName = gameName,
                 runCount = runCount,

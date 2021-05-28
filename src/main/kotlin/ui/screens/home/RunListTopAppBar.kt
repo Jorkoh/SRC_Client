@@ -14,7 +14,7 @@ import androidx.compose.ui.res.vectorXmlResource
 @Composable
 fun RunListTopAppBar(
     gameName: String,
-    runCount: Int?,
+    runCount: Int,
     changeButtonColored: Boolean,
     refreshButtonEnabled: Boolean,
     onRefreshButtonClicked: () -> Unit,
@@ -22,8 +22,13 @@ fun RunListTopAppBar(
     onFiltersButtonClicked: () -> Unit,
     onChangeGameButtonClicked: () -> Unit
 ) {
+    val runCountString = when (runCount) {
+        -1 -> "(loading runs)"
+        1 -> "(1 run)"
+        else -> "($runCount runs)"
+    }
     TopAppBar(
-        title = { Text("$gameName ${if (runCount != null && runCount > 0) "($runCount runs)" else ""}") },
+        title = { Text("$gameName $runCountString") },
         actions = {
             GameDialogButton(changeButtonColored, onChangeGameButtonClicked)
             RefreshButton(refreshButtonEnabled, onRefreshButtonClicked)
@@ -59,7 +64,7 @@ private fun RefreshButton(
     onClick: () -> Unit
 ) {
     val alpha: Float by animateFloatAsState(
-        targetValue = if(enabled) 0.65f else ContentAlpha.disabled,
+        targetValue = if (enabled) 0.65f else ContentAlpha.disabled,
         animationSpec = spring(stiffness = Spring.StiffnessLow)
     )
 

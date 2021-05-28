@@ -34,7 +34,7 @@ data class FullGame(
     val developerIds: List<DeveloperId>,
     val publisherIds: List<PublisherId>,
 
-    val moderators: List<User>,
+    val moderators: List<RegisteredUser>,
     val levels : List<Level>,
     val categories: List<Category>,
 

@@ -56,7 +56,6 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
     private fun refreshGame(newGameId: GameId) {
         fullGameJob?.cancel()
 
-
         val gameChanged = _homeUIState.value.game?.gameId != newGameId
 
         if (gameChanged) {
@@ -65,9 +64,7 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
                 runsUIState = HomeUIState.RunsUIState.LoadingRuns,
                 settingsUIState = HomeUIState.SettingsUIState.LoadingSettings
             )
-            if (homeUIState.value.settingsUIState is HomeUIState.SettingsUIState.LoadedSettings) {
-                settingsDAO.resetGameSpecificSettings()
-            }
+            settingsDAO.resetGameSpecificSettings()
         } else {
             _homeUIState.value = _homeUIState.value.copy(runsUIState = HomeUIState.RunsUIState.LoadingRuns)
         }

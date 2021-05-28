@@ -56,6 +56,10 @@ class DatabaseSingleton {
             override fun decode(databaseValue: String) = RunId(databaseValue)
             override fun encode(value: RunId) = value.value
         }
+        val userIdAdapter = object : ColumnAdapter<UserId, String> {
+            override fun decode(databaseValue: String) = UserId(databaseValue)
+            override fun encode(value: UserId) = value.value
+        }
         val categoryIdAdapter = object : ColumnAdapter<CategoryId, String> {
             override fun decode(databaseValue: String) = CategoryId(databaseValue)
             override fun encode(value: CategoryId) = value.value
@@ -70,6 +74,7 @@ class DatabaseSingleton {
             settingsAdapter = Settings.Adapter(
                 searchQueryTargetAdapter = EnumColumnAdapter(),
                 runStatusAdapter = EnumColumnAdapter(),
+                verifierIdAdapter = userIdAdapter,
                 categoryIdAdapter = categoryIdAdapter,
                 leaderboardStyleAdapter = EnumColumnAdapter(),
                 variablesAndValuesIdsAdapter = variablesAndValuesIdsAdapter,

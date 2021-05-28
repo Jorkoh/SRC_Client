@@ -1,6 +1,7 @@
 import data.local.CategoryId;
 import data.local.GameId;
 import data.local.RunId;
+import data.local.UserId;
 import data.local.entities.RunStatus;
 import data.local.entities.VariableAndValueIds;
 import data.utils.LeaderboardStyle;
@@ -13,6 +14,7 @@ CREATE TABLE settings (
     searchQuery TEXT NOT NULL,
     searchQueryTarget TEXT AS SearchQueryTarget NOT NULL,
     runStatus TEXT AS RunStatus,
+    verifierId TEXT AS UserId,
     categoryId TEXT AS CategoryId,
     leaderboardStyle TEXT AS LeaderboardStyle NOT NULL,
     variablesAndValuesIds TEXT AS List<VariableAndValueIds> NOT NULL,
@@ -33,8 +35,8 @@ CREATE TABLE game (
     name TEXT NOT NULL
 );
 
-INSERT INTO settings (searchQuery, searchQueryTarget, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
-VALUES ("", "Everywhere", "Pending", NULL, "No", "[]", "SubmissionDate", "Ascending");
+INSERT INTO settings (searchQuery, searchQueryTarget, runStatus, verifierId, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
+VALUES ("", "Everywhere", "Pending", NULL, NULL, "No", "[]", "SubmissionDate", "Ascending");
 
 INSERT INTO selectedEntities(selectedGameId, selectedRunId)
 VALUES ("j1npme6p", NULL);
@@ -66,12 +68,12 @@ deleteSettings:
 DELETE FROM settings;
 
 insertSettings:
-INSERT INTO settings (searchQuery, searchQueryTarget, runStatus, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
+INSERT INTO settings (searchQuery, searchQueryTarget, runStatus, verifierId, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
 VALUES ?;
 
 resetGameSpecificSettings:
 UPDATE settings
-SET categoryId = NULL, variablesAndValuesIds = "[]";
+SET categoryId = NULL, verifierId = NULL, variablesAndValuesIds = "[]";
 
 getGameCount:
 SELECT COUNT(*)

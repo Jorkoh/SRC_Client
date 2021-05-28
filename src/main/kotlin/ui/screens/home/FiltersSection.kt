@@ -60,6 +60,7 @@ private fun FiltersContent(
             categories = categories,
             selectedCategory = selectedCategory,
             gameVariables = gameVariables,
+            verifiers = uiState.game.moderators,
             settings = uiState.settings,
             onFiltersChanged = onFiltersChanged
         )
@@ -133,6 +134,7 @@ private fun GlobalFilters(
     categories: List<Category>,
     selectedCategory: Category?,
     gameVariables: List<Variable>?,
+    verifiers: List<RegisteredUser>,
     settings: Settings,
     onFiltersChanged: (Settings) -> Unit
 ) {
@@ -165,6 +167,15 @@ private fun GlobalFilters(
             selectedOption = selectedRunStatus,
             options = runStatuses,
             onOptionSelected = { onFiltersChanged(settings.copy(runStatus = it)) }
+        )
+
+        // Verifier filter
+        val selectedVerifier = verifiers.firstOrNull { it.userId == settings.verifierId }
+        SettingComponent(
+            title = "Verifier",
+            selectedOption = selectedVerifier,
+            options = verifiers,
+            onOptionSelected = { onFiltersChanged(settings.copy(verifierId = it?.userId)) }
         )
 
         // Display one run per player thingy

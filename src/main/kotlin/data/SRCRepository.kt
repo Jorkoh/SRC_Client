@@ -95,6 +95,7 @@ class SRCRepository(
         cachedRuns.filter { run ->
             (settings.runStatus?.filter(run) ?: true)
                     && (settings.categoryId?.let { run.categoryId == it } ?: true)
+                    && (settings.verifierId?.let { run.verifierId == it } ?: true)
                     && settings.variablesAndValuesIds.filter(run)
                     && settings.searchQuery.filter(run, settings.searchQueryTarget)
         }.sortedWith { run1, run2 ->
