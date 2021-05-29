@@ -50,14 +50,14 @@ private fun FiltersContent(
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
         // The available categories depend on the selected level (or lack of it)
         val availableCategories = getAvailableCategories(
-            selectedLevelId = if (uiState.game.levels.isEmpty()) LevelId.FullGame else uiState.settings.levelId,
+            selectedLevelId = uiState.settings.levelId,
             categories = uiState.game.categories
         )
         val selectedCategory = availableCategories.firstOrNull { it.categoryId == uiState.settings.categoryId }
 
         // The available variables depend on the selected level (or lack of it) and the selected category
         val availableVariables = getAvailableVariables(
-            selectedLevelId = if (uiState.game.levels.isEmpty()) LevelId.FullGame else uiState.settings.levelId,
+            selectedLevelId = uiState.settings.levelId,
             selectedCategoryId = selectedCategory?.categoryId,
             variables = uiState.game.variables
         )
@@ -92,29 +92,27 @@ private fun FiltersContent(
 }
 
 private fun getAvailableCategories(
-    selectedLevelId: LevelId?,
+    selectedLevelId: LevelId,
     categories: List<Category>
 ) = when (selectedLevelId) {
-    null -> categories
     LevelId.FullGame -> categories.filter { it.type == CategoryType.PerGame }
     // seems like per-level categories aren't tied to a specific level
     else -> categories.filter { it.type == CategoryType.PerLevel }
 }
 
 private fun getAvailableVariables(
-    selectedLevelId: LevelId?,
+    selectedLevelId: LevelId,
     selectedCategoryId: CategoryId?,
     variables: List<Variable>
 ) = when (selectedLevelId) {
-    null -> variables.filter { selectedCategoryId == null || it.categoryId == selectedCategoryId }
     LevelId.FullGame -> variables.filter {
         (it.scope == VariableScope.Global || it.scope == VariableScope.FullGame)
-                && (selectedCategoryId == null || it.categoryId == null || it.categoryId == selectedCategoryId)
+                && (it.categoryId == null || it.categoryId == selectedCategoryId)
     }
     else -> variables.filter {
         (it.scope == VariableScope.Global || it.scope == VariableScope.AllLevels
                 || (it.scope == VariableScope.SingleLevel && it.levelId == selectedLevelId))
-                && (selectedCategoryId == null || it.categoryId == null || it.categoryId == selectedCategoryId)
+                && (it.categoryId == null || it.categoryId == selectedCategoryId)
     }
 }
 
@@ -124,7 +122,7 @@ private fun QueryFilter(
     onFiltersChanged: (Settings) -> Unit
 ) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(24.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         OutlinedTextField(
@@ -170,7 +168,7 @@ private fun GlobalFilters(
     verifiers: List<RegisteredUser>
 ) {
     FlowRow(
-        horizontalGap = 24.dp,
+        horizontalGap = 16.dp,
         verticalGap = 8.dp,
     ) {
         // Level filter
@@ -181,19 +179,21 @@ private fun GlobalFilters(
                 title = "Level",
                 selectedOption = selectedLevel,
                 options = levelsWithFull,
-                onOptionSelected = { newLevel ->
+                addAllOption = false,
+                onOptionSelected = {
+                    val newLevelId = it?.levelId ?: LevelId.FullGame
                     onFiltersChanged(settings.copy(
-                        levelId = newLevel?.levelId,
+                        levelId = newLevelId,
                         // Remove category filter if no longer available
                         categoryId = getAvailableCategories(
-                            selectedLevelId = newLevel?.levelId,
+                            selectedLevelId = newLevelId,
                             categories = categories
                         ).firstOrNull { it.categoryId == selectedCategory?.categoryId }?.categoryId,
                         // Remove all variable filters no longer available
                         variablesAndValuesIds = settings.variablesAndValuesIds.toMutableList()
                             .filter { filterVariable ->
                                 getAvailableVariables(
-                                    selectedLevelId = newLevel?.levelId,
+                                    selectedLevelId = newLevelId,
                                     selectedCategoryId = selectedCategory?.categoryId,
                                     variables = variables
                                 ).any { filterVariable.variableId == it.variableId }
@@ -234,15 +234,6 @@ private fun GlobalFilters(
             onOptionSelected = { onFiltersChanged(settings.copy(runStatus = it)) }
         )
 
-        // Verifier filter
-        val selectedVerifier = verifiers.firstOrNull { it.userId == settings.verifierId }
-        SettingComponent(
-            title = "Verifier",
-            selectedOption = selectedVerifier,
-            options = verifiers,
-            onOptionSelected = { onFiltersChanged(settings.copy(verifierId = it?.userId)) }
-        )
-
         // Display one run per player thingy
         val leaderboardStyles = LeaderboardStyle.values().toList()
         val selectedLeaderboardStyle = settings.leaderboardStyle
@@ -252,6 +243,15 @@ private fun GlobalFilters(
             options = leaderboardStyles,
             addAllOption = false,
             onOptionSelected = { onFiltersChanged(settings.copy(leaderboardStyle = it ?: LeaderboardStyle.Default)) }
+        )
+
+        // Verifier filter
+        val selectedVerifier = verifiers.firstOrNull { it.userId == settings.verifierId }
+        SettingComponent(
+            title = "Verifier",
+            selectedOption = selectedVerifier,
+            options = verifiers,
+            onOptionSelected = { onFiltersChanged(settings.copy(verifierId = it?.userId)) }
         )
     }
 }
@@ -276,7 +276,7 @@ private fun VariablesFilters(
     }.sortedByDescending { it.first.isSubCategory }
 
     FlowRow(
-        horizontalGap = 24.dp,
+        horizontalGap = 16.dp,
         verticalGap = 8.dp,
     ) {
         for ((variable, values, selectedValue) in variableValuesAndSelectedList) {
@@ -303,7 +303,7 @@ private fun SortingComponent(
     onSortingChanged: (Settings) -> Unit
 ) {
     FlowRow(
-        horizontalGap = 24.dp,
+        horizontalGap = 16.dp,
         verticalGap = 8.dp,
     ) {
         val runSortDiscriminators = RunSortDiscriminator.values().toList()
