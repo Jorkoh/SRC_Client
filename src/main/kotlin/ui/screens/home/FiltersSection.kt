@@ -188,7 +188,7 @@ private fun GlobalFilters(
                         categoryId = getAvailableCategories(
                             selectedLevelId = newLevelId,
                             categories = categories
-                        ).firstOrNull { it.categoryId == selectedCategory?.categoryId }?.categoryId,
+                        ).firstOrNull { category -> category.categoryId == selectedCategory?.categoryId }?.categoryId,
                         // Remove all variable filters no longer available
                         variablesAndValuesIds = settings.variablesAndValuesIds.toMutableList()
                             .filter { filterVariable ->

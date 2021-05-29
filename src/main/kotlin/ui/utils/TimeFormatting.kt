@@ -1,11 +1,9 @@
 package ui.utils
 
-import kotlin.math.roundToInt
 import kotlin.time.Duration
 
 fun Duration.toSRCString() = toComponents { hours, minutes, seconds, nanoseconds ->
-    // TODO added rounding because of some floating point weirdness with Duration, should be fixed properly
-    val milliseconds = (nanoseconds / 1000000.0).roundToInt()
+    val milliseconds = nanoseconds / 1_000_000
 
     if (hours == 0 && minutes == 0 && seconds == 0 && nanoseconds == 0) {
         null

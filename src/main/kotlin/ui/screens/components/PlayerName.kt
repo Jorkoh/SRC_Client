@@ -1,10 +1,7 @@
 package ui.screens.components
 
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -52,10 +49,13 @@ fun PlayerNames(
 private fun PlayerName(player: User, postText: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         player.countryCode?.let {
+            val flagModifier = Modifier.size(width = 18.dp, height = 12.dp).border(1.dp, Color.Black)
+
             KamelImage(
                 resource = lazyImageResource(data = "https://www.speedrun.com/images/flags/$it.png"),
                 contentDescription = "Country",
-                modifier = Modifier.height(12.dp).border(1.dp, Color.Black)
+                onLoading = { Box(flagModifier) },
+                modifier = flagModifier
             )
             Spacer(Modifier.width(4.dp))
         }
