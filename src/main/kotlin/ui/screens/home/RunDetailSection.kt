@@ -26,8 +26,10 @@ import data.local.entities.*
 import org.jetbrains.skija.Codec
 import org.jetbrains.skija.Data
 import ui.screens.components.LoadingIndicator
+import ui.screens.components.PlayerName
 import ui.screens.components.PlayerNames
 import ui.screens.components.RunStatusIndicator
+import ui.theme.linkBlue
 import ui.theme.offWhite
 import ui.utils.FlowRow
 import ui.utils.GifAnimation
@@ -131,7 +133,7 @@ private fun LoadedRun(run: FullRun) {
                 Players(run.players)
                 Status(
                     runStatus = run.runStatus,
-                    verifierName = run.verifier?.name ?: run.verifierId?.value,
+                    verifier = run.verifier,
                     verificationDate = run.verificationDate,
                     dateFormat = dateFormat
                 )
@@ -235,14 +237,14 @@ private fun Players(players: List<User>) {
     Row {
         Text("Players:")
         Spacer(Modifier.width(16.dp))
-        PlayerNames(players)
+        PlayerNames(players = players, clickableNamesWhenPossible = true)
     }
 }
 
 @Composable
 private fun Status(
     runStatus: RunStatus,
-    verifierName: String?,
+    verifier: RegisteredUser?,
     verificationDate: Date?,
     dateFormat: SimpleDateFormat
 ) {
@@ -251,8 +253,11 @@ private fun Status(
         Spacer(Modifier.width(16.dp))
         FlowRow {
             RunStatusIndicator(runStatus)
-            verifierName?.let { name ->
-                Text(" by $name")
+            if (verifier != null) {
+                Text(" by ")
+                PlayerName(verifier, true)
+            } else {
+                Text(" by unknown")
             }
             verificationDate?.let { date ->
                 Text(" on ${dateFormat.format(date)}")
@@ -286,8 +291,8 @@ private fun VideosText(videoLinks: List<String>, videoText: String?) {
                 AnnotatedString(
                     text = videoLink,
                     spanStyle = SpanStyle(
-                        color = Color.Blue,
-                        fontWeight = FontWeight.Bold
+                        color = MaterialTheme.colors.linkBlue,
+                        fontWeight = FontWeight.SemiBold
                     )
                 ),
                 onClick = { Desktop.getDesktop().browse(URI(videoLink)) }

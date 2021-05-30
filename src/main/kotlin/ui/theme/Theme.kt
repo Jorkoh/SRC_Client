@@ -36,3 +36,6 @@ val Colors.rejectRed: Color
 
 val Colors.pendingBlue: Color
     get() = CustomColors.pendingBlue
+
+val Colors.linkBlue: Color
+    get() = CustomColors.linkBlue
