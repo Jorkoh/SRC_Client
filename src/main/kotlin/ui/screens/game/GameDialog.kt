@@ -10,14 +10,13 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.WindowSize
+import androidx.compose.ui.window.rememberDialogState
 import persistence.database.Game
 import ui.screens.components.LoadingIndicator
 import ui.theme.approveGreen
@@ -57,13 +56,12 @@ private fun GameDialogContent(
     onDismiss: () -> Unit
 ) {
     Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            title = "SRC Client",
-            resizable = false,
-            undecorated = true,
-            size = IntSize(400, 400)
-        )
+        state = rememberDialogState(size = WindowSize(400.dp, 400.dp)),
+        title = "SRC Client",
+        initialAlignment = Alignment.Center,
+        resizable = false,
+        undecorated = true,
+        onCloseRequest = onDismiss
     ) {
         Surface(
             modifier = Modifier.size(400.dp, 400.dp),
@@ -177,12 +175,12 @@ fun GameSelectorSearchField(
             Text("Game")
         },
         modifier = Modifier.onFocusChanged { newFocusState ->
-            if (newFocusState == FocusState.Active && uiState.value is GameSelectorUIState.NotSearching) {
+            if (newFocusState.isFocused && uiState.value is GameSelectorUIState.NotSearching) {
                 onSearchStarted()
-            } else if (newFocusState == FocusState.Inactive && uiState.value !is GameSelectorUIState.NotSearching) {
+            } else if (!newFocusState.isFocused && uiState.value !is GameSelectorUIState.NotSearching) {
                 onSearchStopped()
             }
-            setSearchFieldIsFocused(newFocusState == FocusState.Active)
+            setSearchFieldIsFocused(newFocusState.isFocused)
         }.fillMaxWidth(),
     )
 }

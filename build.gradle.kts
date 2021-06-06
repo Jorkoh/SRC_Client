@@ -15,10 +15,10 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.4.32"
-    kotlin("plugin.serialization") version "1.5.0"
-    id("org.jetbrains.compose") version "0.4.0-build188" // 190 and above have a regression with lazyColumn :/
-    id("org.jetbrains.kotlin.kapt") version "1.4.32"
+    kotlin("jvm") version "1.5.10"
+    kotlin("plugin.serialization") version "1.5.10"
+    id("org.jetbrains.compose") version "0.4.0"
+    id("org.jetbrains.kotlin.kapt") version "1.5.10"
     id("com.squareup.sqldelight") version "1.5.0"
 }
 
@@ -54,7 +54,7 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:1.7.30")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.5")
 
-    implementation("com.alialbaali.kamel:kamel-image:0.2.0")
+    implementation("com.alialbaali.kamel:kamel-image:0.2.1")
 }
 
 tasks.withType<KotlinCompile>() {
@@ -63,6 +63,7 @@ tasks.withType<KotlinCompile>() {
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=androidx.compose.material.ExperimentalMaterialApi"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi"
+    kotlinOptions.freeCompilerArgs += "-Xopt-in=androidx.compose.ui.ExperimentalComposeUiApi"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.ExperimentalStdlibApi"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.time.ExperimentalTime"
     kotlinOptions.freeCompilerArgs += "-Xinline-classes"
