@@ -2,6 +2,7 @@ package data.local
 
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToOne
+import data.utils.LeaderboardType
 import persistence.database.DatabaseQueries
 import persistence.database.Settings
 
@@ -19,5 +20,9 @@ class SettingsDAO(databaseSingleton: DatabaseSingleton) {
 
     fun resetGameSpecificSettings() {
         queries.resetGameSpecificSettings()
+    }
+
+    fun setLeaderboardType(leaderboardType: LeaderboardType) {
+        queries.updateLeaderboardType(leaderboardType)
     }
 }

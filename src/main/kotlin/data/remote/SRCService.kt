@@ -5,7 +5,6 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import data.remote.adapters.*
 import data.remote.responses.*
-import data.remote.utils.LoggerInterceptor
 import data.remote.utils.UserAgentInterceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit

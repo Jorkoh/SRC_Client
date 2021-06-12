@@ -19,10 +19,7 @@ import androidx.compose.ui.unit.dp
 import data.local.CategoryId
 import data.local.LevelId
 import data.local.entities.*
-import data.utils.LeaderboardStyle
-import data.utils.RunSortDirection
-import data.utils.RunSortDiscriminator
-import data.utils.SearchQueryTarget
+import data.utils.*
 import persistence.database.Settings
 import ui.screens.components.LoadingIndicator
 import ui.utils.FlowRow
@@ -48,15 +45,16 @@ private fun FiltersContent(
     onFiltersChanged: (Settings) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-        // The available categories depend on the selected level (or lack of it)
+        // The available categories depend on the leaderboard type
         val availableCategories = getAvailableCategories(
-            selectedLevelId = uiState.settings.levelId,
+            leaderboardType = uiState.settings.leaderboardType,
             categories = uiState.game.categories
         )
         val selectedCategory = availableCategories.firstOrNull { it.categoryId == uiState.settings.categoryId }
 
         // The available variables depend on the selected level (or lack of it) and the selected category
         val availableVariables = getAvailableVariables(
+            leaderboardType = uiState.settings.leaderboardType,
             selectedLevelId = uiState.settings.levelId,
             selectedCategoryId = selectedCategory?.categoryId,
             variables = uiState.game.variables
@@ -92,28 +90,31 @@ private fun FiltersContent(
 }
 
 private fun getAvailableCategories(
-    selectedLevelId: LevelId,
+    leaderboardType: LeaderboardType?,
     categories: List<Category>
-) = when (selectedLevelId) {
-    LevelId.FullGame -> categories.filter { it.type == CategoryType.PerGame }
+) = when (leaderboardType) {
+    LeaderboardType.FullGame -> categories.filter { it.type == CategoryType.PerGame }
     // seems like per-level categories aren't tied to a specific level
-    else -> categories.filter { it.type == CategoryType.PerLevel }
+    LeaderboardType.Level -> categories.filter { it.type == CategoryType.PerLevel }
+    else -> emptyList()
 }
 
 private fun getAvailableVariables(
-    selectedLevelId: LevelId,
+    leaderboardType: LeaderboardType?,
+    selectedLevelId: LevelId?,
     selectedCategoryId: CategoryId?,
     variables: List<Variable>
-) = when (selectedLevelId) {
-    LevelId.FullGame -> variables.filter {
+) = when (leaderboardType) {
+    LeaderboardType.FullGame -> variables.filter {
         (it.scope == VariableScope.Global || it.scope == VariableScope.FullGame)
                 && (it.categoryId == null || it.categoryId == selectedCategoryId)
     }
-    else -> variables.filter {
+    LeaderboardType.Level -> variables.filter {
         (it.scope == VariableScope.Global || it.scope == VariableScope.AllLevels
                 || (it.scope == VariableScope.SingleLevel && it.levelId == selectedLevelId))
                 && (it.categoryId == null || it.categoryId == selectedCategoryId)
     }
+    else -> emptyList()
 }
 
 @Composable
@@ -171,29 +172,58 @@ private fun GlobalFilters(
         horizontalGap = 16.dp,
         verticalGap = 8.dp,
     ) {
-        // Level filter
+        // Leaderboard type filter
         if (levels.isNotEmpty()) {
-            val levelsWithFull = listOf(Level.FullGame).plus(levels)
-            val selectedLevel = levelsWithFull.firstOrNull { it.levelId == settings.levelId }
+            val leaderboardTypes = LeaderboardType.values().toList()
+            val selectedLeaderboardType = settings.leaderboardType
             SettingComponent(
-                title = "Level",
-                selectedOption = selectedLevel,
-                options = levelsWithFull,
-                addAllOption = false,
-                onOptionSelected = {
-                    val newLevelId = it?.levelId ?: LevelId.FullGame
+                title = "Leaderboard type",
+                selectedOption = selectedLeaderboardType,
+                options = leaderboardTypes,
+                onOptionSelected = { leaderboardType ->
                     onFiltersChanged(settings.copy(
-                        levelId = newLevelId,
+                        leaderboardType = leaderboardType,
                         // Remove category filter if no longer available
                         categoryId = getAvailableCategories(
-                            selectedLevelId = newLevelId,
+                            leaderboardType = leaderboardType,
                             categories = categories
                         ).firstOrNull { category -> category.categoryId == selectedCategory?.categoryId }?.categoryId,
                         // Remove all variable filters no longer available
                         variablesAndValuesIds = settings.variablesAndValuesIds.toMutableList()
                             .filter { filterVariable ->
                                 getAvailableVariables(
-                                    selectedLevelId = newLevelId,
+                                    leaderboardType = leaderboardType,
+                                    selectedLevelId = settings.levelId,
+                                    selectedCategoryId = selectedCategory?.categoryId,
+                                    variables = variables
+                                ).any { filterVariable.variableId == it.variableId }
+                            }
+                    ))
+                }
+            )
+        }
+
+        // Level filter
+        if (settings.leaderboardType == LeaderboardType.Level && levels.isNotEmpty()) {
+            val selectedLevel = levels.firstOrNull { it.levelId == settings.levelId }
+            SettingComponent(
+                title = "Level",
+                selectedOption = selectedLevel,
+                options = levels,
+                onOptionSelected = { level ->
+                    onFiltersChanged(settings.copy(
+                        levelId = level?.levelId,
+                        // Remove category filter if no longer available
+                        categoryId = getAvailableCategories(
+                            leaderboardType = settings.leaderboardType,
+                            categories = categories
+                        ).firstOrNull { category -> category.categoryId == selectedCategory?.categoryId }?.categoryId,
+                        // Remove all variable filters no longer available
+                        variablesAndValuesIds = settings.variablesAndValuesIds.toMutableList()
+                            .filter { filterVariable ->
+                                getAvailableVariables(
+                                    leaderboardType = settings.leaderboardType,
+                                    selectedLevelId = level?.levelId,
                                     selectedCategoryId = selectedCategory?.categoryId,
                                     variables = variables
                                 ).any { filterVariable.variableId == it.variableId }
@@ -204,25 +234,28 @@ private fun GlobalFilters(
         }
 
         // Category filter
-        SettingComponent(
-            title = "Category",
-            selectedOption = selectedCategory,
-            options = categories,
-            onOptionSelected = { newCategory ->
-                onFiltersChanged(settings.copy(
-                    categoryId = newCategory?.categoryId,
-                    // Remove all variable filters no longer available
-                    variablesAndValuesIds = settings.variablesAndValuesIds.toMutableList()
-                        .filter { filterVariable ->
-                            getAvailableVariables(
-                                selectedLevelId = settings.levelId,
-                                selectedCategoryId = newCategory?.categoryId,
-                                variables = variables
-                            ).any { filterVariable.variableId == it.variableId }
-                        }
-                ))
-            }
-        )
+        if (categories.isNotEmpty()) {
+            SettingComponent(
+                title = "Category",
+                selectedOption = selectedCategory,
+                options = categories,
+                onOptionSelected = { newCategory ->
+                    onFiltersChanged(settings.copy(
+                        categoryId = newCategory?.categoryId,
+                        // Remove all variable filters no longer available
+                        variablesAndValuesIds = settings.variablesAndValuesIds.toMutableList()
+                            .filter { filterVariable ->
+                                getAvailableVariables(
+                                    leaderboardType = settings.leaderboardType,
+                                    selectedLevelId = settings.levelId,
+                                    selectedCategoryId = newCategory?.categoryId,
+                                    variables = variables
+                                ).any { filterVariable.variableId == it.variableId }
+                            }
+                    ))
+                }
+            )
+        }
 
         // Run status filter
         val runStatuses = RunStatus.values().toList()

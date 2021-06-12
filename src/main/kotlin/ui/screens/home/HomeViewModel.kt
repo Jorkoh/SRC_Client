@@ -4,6 +4,7 @@ import data.SRCRepository
 import data.local.*
 import data.local.entities.FullGame
 import data.local.entities.Run
+import data.utils.LeaderboardType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -76,6 +77,9 @@ class HomeViewModel(private val scope: CoroutineScope) : KoinComponent {
             if (gameChanged) {
                 val game = srcRepository.getFullGame(newGameId).first()
                 _homeUIState.value = _homeUIState.value.copy(game = game)
+                if (game.levels.isEmpty()) {
+                    settingsDAO.setLeaderboardType(LeaderboardType.FullGame)
+                }
             }
 
             restartRefreshAvailableCooldown()

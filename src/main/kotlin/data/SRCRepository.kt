@@ -2,13 +2,13 @@ package data
 
 import data.local.GameId
 import data.local.GamesDAO
-import data.local.LevelId
 import data.local.RunId
 import data.local.entities.*
 import data.remote.SRCService
 import data.remote.responses.GameResponse
 import data.remote.responses.RunResponse
 import data.utils.LeaderboardStyle
+import data.utils.LeaderboardType
 import data.utils.RunSortDirection
 import data.utils.RunSortDiscriminator.*
 import data.utils.RunSortDiscriminator.Category
@@ -97,7 +97,8 @@ class SRCRepository(
     ) = withContext(Dispatchers.Default) {
         cachedRuns.filter { run ->
             (settings.runStatus?.filter(run) ?: true)
-                    && (settings.levelId.filter(run))
+                    && settings.leaderboardType.filter(run)
+                    && (settings.levelId?.let { run.levelId == it } ?: true)
                     && (settings.categoryId?.let { run.categoryId == it } ?: true)
                     && (settings.verifierId?.let { run.verifierId == it } ?: true)
                     && settings.variablesAndValuesIds.filter(run)
@@ -148,10 +149,10 @@ class SRCRepository(
         run.runStatus == this
     }
 
-    private fun LevelId?.filter(run: Run) = when (this) {
+    private fun LeaderboardType?.filter(run: Run) = when (this) {
         null -> true
-        LevelId.FullGame -> run.levelId == null
-        else -> run.levelId == this
+        LeaderboardType.FullGame -> run.levelId == null
+        LeaderboardType.Level -> run.levelId != null
     }
 
     private fun List<VariableAndValueIds>.filter(run: Run) = all { (filterVariableId, filterValueId) ->

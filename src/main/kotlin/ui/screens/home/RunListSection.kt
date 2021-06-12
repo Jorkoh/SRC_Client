@@ -48,7 +48,7 @@ fun RunListSection(
 
     BackdropScaffold(
         scaffoldState = scaffoldState,
-        gesturesEnabled = false,
+        gesturesEnabled = true,
         appBar = {
             val gameName = uiState.value.game?.name ?: "Loading game..."
             val runCount = (uiState.value.runsUIState as? LoadedRuns)?.runs?.size ?: -1
@@ -125,11 +125,7 @@ private fun LoadedRunList(
         }
         VerticalScrollbar(
             modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-            adapter = rememberScrollbarAdapter(
-                scrollState = listState,
-                itemCount = runs.size,
-                averageItemSize = 60.dp
-            )
+            adapter = rememberScrollbarAdapter(listState)
         )
     }
 }

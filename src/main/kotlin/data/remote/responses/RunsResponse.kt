@@ -2,7 +2,6 @@ package data.remote.responses
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import data.local.entities.Level
 import data.local.entities.RunStatus
 import java.util.*
 

@@ -6,6 +6,7 @@ import data.local.UserId;
 import data.local.entities.RunStatus;
 import data.local.entities.VariableAndValueIds;
 import data.utils.LeaderboardStyle;
+import data.utils.LeaderboardType;
 import data.utils.RunSortDirection;
 import data.utils.RunSortDiscriminator;
 import data.utils.SearchQueryTarget;
@@ -16,7 +17,8 @@ CREATE TABLE settings (
     searchQueryTarget TEXT AS SearchQueryTarget NOT NULL,
     runStatus TEXT AS RunStatus,
     verifierId TEXT AS UserId,
-    levelId TEXT AS LevelId NOT NULL,
+    leaderboardType TEXT AS LeaderboardType,
+    levelId TEXT AS LevelId,
     categoryId TEXT AS CategoryId,
     leaderboardStyle TEXT AS LeaderboardStyle NOT NULL,
     variablesAndValuesIds TEXT AS List<VariableAndValueIds> NOT NULL,
@@ -37,8 +39,8 @@ CREATE TABLE game (
     name TEXT NOT NULL
 );
 
-INSERT INTO settings (searchQuery, searchQueryTarget, runStatus, verifierId, levelId, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
-VALUES ("", "Everywhere", "Pending", NULL, "", NULL, "No", "[]", "SubmissionDate", "Ascending");
+INSERT INTO settings (searchQuery, searchQueryTarget, runStatus, verifierId, leaderboardType, levelId, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
+VALUES ("", "Everywhere", "Pending", NULL, NULL, NULL, NULL, "No", "[]", "SubmissionDate", "Ascending");
 
 INSERT INTO selectedEntities(selectedGameId, selectedRunId)
 VALUES ("j1npme6p", NULL);
@@ -70,12 +72,16 @@ deleteSettings:
 DELETE FROM settings;
 
 insertSettings:
-INSERT INTO settings (searchQuery, searchQueryTarget, runStatus, verifierId, levelId, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
+INSERT INTO settings (searchQuery, searchQueryTarget, runStatus, verifierId, leaderboardType, levelId, categoryId, leaderboardStyle, variablesAndValuesIds, runSortDiscriminator, runSortDirection)
 VALUES ?;
 
 resetGameSpecificSettings:
 UPDATE settings
-SET levelId = "", categoryId = NULL, verifierId = NULL, variablesAndValuesIds = "[]";
+SET levelId = NULL, categoryId = NULL, verifierId = NULL, variablesAndValuesIds = "[]";
+
+updateLeaderboardType:
+UPDATE settings
+SET leaderboardType = ?;
 
 getGameCount:
 SELECT COUNT(*)

@@ -17,7 +17,7 @@ buildscript {
 plugins {
     kotlin("jvm") version "1.5.10"
     kotlin("plugin.serialization") version "1.5.10"
-    id("org.jetbrains.compose") version "0.4.0"
+    id("org.jetbrains.compose") version "0.5.0-build224"
     id("org.jetbrains.kotlin.kapt") version "1.5.10"
     id("com.squareup.sqldelight") version "1.5.0"
 }
@@ -57,7 +57,7 @@ dependencies {
     implementation("com.alialbaali.kamel:kamel-image:0.2.1")
 }
 
-tasks.withType<KotlinCompile>() {
+tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "11"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"

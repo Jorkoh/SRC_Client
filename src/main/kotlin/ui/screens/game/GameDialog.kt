@@ -102,6 +102,10 @@ private fun GameDialogButtons(
     ) {
         TextButton(
             onClick = onDismiss,
+            elevation = ButtonDefaults.elevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 12.dp
+            ),
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = MaterialTheme.colors.rejectRed,
                 contentColor = MaterialTheme.colors.onPrimary
@@ -112,6 +116,10 @@ private fun GameDialogButtons(
         Spacer(Modifier.width(16.dp))
         TextButton(
             onClick = onSave,
+            elevation = ButtonDefaults.elevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 12.dp
+            ),
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = MaterialTheme.colors.approveGreen,
                 contentColor = MaterialTheme.colors.onPrimary

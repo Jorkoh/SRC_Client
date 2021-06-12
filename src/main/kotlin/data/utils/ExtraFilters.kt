@@ -2,6 +2,11 @@ package data.utils
 
 import ui.screens.home.Displayable
 
+enum class LeaderboardType(override val uiString: String) : Displayable {
+    FullGame("FullGame"),
+    Level("Level");
+}
+
 /**
  * Display one run per player like the leaderboards or unlimited
  */

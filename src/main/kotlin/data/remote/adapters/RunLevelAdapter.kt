@@ -1,16 +1,13 @@
 package data.remote.adapters
 
-import com.squareup.moshi.FromJson
-import com.squareup.moshi.JsonReader
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.ToJson
+import com.squareup.moshi.*
 import data.remote.responses.LevelResponse
 import data.remote.responses.RunLevel
 import data.remote.utils.readObject
 
 class RunLevelAdapter {
     companion object {
-        val levelAdapter = Moshi.Builder().build().adapter(LevelResponse::class.java)
+        val levelAdapter: JsonAdapter<LevelResponse> = Moshi.Builder().build().adapter(LevelResponse::class.java)
     }
 
     @FromJson

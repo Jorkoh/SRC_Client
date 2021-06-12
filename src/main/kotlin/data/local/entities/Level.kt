@@ -11,13 +11,4 @@ data class Level(
 ) : Displayable {
     override val uiString: String
         get() = name
-
-    companion object {
-        val FullGame = Level(
-            levelId = LevelId.FullGame,
-            name = "Full game",
-            rules = null,
-            weblink = ""
-        )
-    }
 }

@@ -13,33 +13,42 @@ import persistence.database.Game
 import persistence.database.SelectedEntities
 import persistence.database.Settings
 
-inline class GameId(val value: String) {
+@JvmInline
+value class GameId(val value: String) {
     companion object {
         val Default = GameId("j1npme6p") // Minecraft: Java Edition
     }
 }
-
-inline class CategoryId(val value: String)
-
-@Serializable
-inline class VariableId(val value: String)
+@JvmInline
+value class CategoryId(val value: String)
 
 @Serializable
-inline class ValueId(val value: String)
-inline class LevelId(val value: String){
-    companion object{
-        val FullGame = LevelId("")
-    }
-}
-inline class RunId(val value: String)
-inline class UserId(val value: String)
-inline class GameTypeId(val value: String)
-inline class PlatformId(val value: String)
-inline class RegionId(val value: String)
-inline class GenreId(val value: String)
-inline class EngineId(val value: String)
-inline class DeveloperId(val value: String)
-inline class PublisherId(val value: String)
+@JvmInline
+value class VariableId(val value: String)
+
+@Serializable
+@JvmInline
+value class ValueId(val value: String)
+@JvmInline
+value class LevelId(val value: String)
+@JvmInline
+value class RunId(val value: String)
+@JvmInline
+value class UserId(val value: String)
+@JvmInline
+value class GameTypeId(val value: String)
+@JvmInline
+value class PlatformId(val value: String)
+@JvmInline
+value class RegionId(val value: String)
+@JvmInline
+value class GenreId(val value: String)
+@JvmInline
+value class EngineId(val value: String)
+@JvmInline
+value class DeveloperId(val value: String)
+@JvmInline
+value class PublisherId(val value: String)
 
 class DatabaseSingleton {
     val db: DatabaseInstance
@@ -83,6 +92,7 @@ class DatabaseSingleton {
                 searchQueryTargetAdapter = EnumColumnAdapter(),
                 runStatusAdapter = EnumColumnAdapter(),
                 verifierIdAdapter = userIdAdapter,
+                leaderboardTypeAdapter = EnumColumnAdapter(),
                 levelIdAdapter = levelIdAdapter,
                 categoryIdAdapter = categoryIdAdapter,
                 leaderboardStyleAdapter = EnumColumnAdapter(),
