@@ -3,13 +3,19 @@ package ui.screens.home
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BoxWithTooltip
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.vectorXmlResource
+import androidx.compose.ui.unit.dp
+import ui.screens.components.Tooltip
 
 @Composable
 fun RunListTopAppBar(
@@ -47,14 +53,16 @@ private fun GameDialogButton(
         animationSpec = spring(stiffness = Spring.StiffnessLow)
     )
 
-    IconButton(
-        onClick = onClick
-    ) {
-        Icon(
-            imageVector = Icons.Default.Edit,
-            contentDescription = "Change game",
-            tint = LocalContentColor.current.copy(alpha = alpha)
-        )
+    Tooltip("Change game") {
+        IconButton(
+            onClick = onClick
+        ) {
+            Icon(
+                imageVector = Icons.Default.Edit,
+                contentDescription = "Change game",
+                tint = LocalContentColor.current.copy(alpha = alpha)
+            )
+        }
     }
 }
 
@@ -68,15 +76,17 @@ private fun RefreshButton(
         animationSpec = spring(stiffness = Spring.StiffnessLow)
     )
 
-    IconButton(
-        enabled = enabled,
-        onClick = onClick
-    ) {
-        Icon(
-            imageVector = Icons.Default.Refresh,
-            contentDescription = "Refresh game",
-            tint = LocalContentColor.current.copy(alpha = alpha)
-        )
+    Tooltip("Refresh runs") {
+        IconButton(
+            enabled = enabled,
+            onClick = onClick
+        ) {
+            Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = "Refresh runs",
+                tint = LocalContentColor.current.copy(alpha = alpha)
+            )
+        }
     }
 }
 
@@ -90,13 +100,15 @@ private fun FiltersButton(
         animationSpec = spring(stiffness = Spring.StiffnessLow)
     )
 
-    IconButton(
-        onClick = onClick
-    ) {
-        Icon(
-            imageVector = vectorXmlResource("ic_filter.xml"),
-            contentDescription = "Filters",
-            tint = LocalContentColor.current.copy(alpha = alpha)
-        )
+    Tooltip("Open filters") {
+        IconButton(
+            onClick = onClick
+        ) {
+            Icon(
+                imageVector = vectorXmlResource("ic_filter.xml"),
+                contentDescription = "Open filters",
+                tint = LocalContentColor.current.copy(alpha = alpha)
+            )
+        }
     }
 }

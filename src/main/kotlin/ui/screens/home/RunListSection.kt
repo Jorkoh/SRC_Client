@@ -27,6 +27,7 @@ import persistence.database.Settings
 import ui.screens.components.LoadingIndicator
 import ui.screens.components.PlayerNames
 import ui.screens.components.RunStatusIndicator
+import ui.screens.components.Tooltip
 import ui.screens.home.HomeUIState.RunsUIState.*
 import ui.theme.offWhite
 import ui.utils.toSRCString
@@ -212,15 +213,17 @@ private fun RunDate(
 
 @Composable
 private fun SRCButton(weblink: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.clickable { Desktop.getDesktop().browse(URI(weblink)) }
-            .padding(start = 4.dp, end = 2.dp, bottom = 2.dp, top = 0.dp),
-    ) {
-        Text(text = "SRC", style = MaterialTheme.typography.button)
-        Icon(
-            imageVector = vectorXmlResource("ic_open.xml"),
-            contentDescription = "Open in speedrun.com"
-        )
+    Tooltip("Open in speedrun.com") {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable { Desktop.getDesktop().browse(URI(weblink)) }
+                .padding(start = 4.dp, end = 2.dp, bottom = 2.dp, top = 0.dp),
+        ) {
+            Text(text = "SRC", style = MaterialTheme.typography.button)
+            Icon(
+                imageVector = vectorXmlResource("ic_open.xml"),
+                contentDescription = "Open in speedrun.com"
+            )
+        }
     }
 }

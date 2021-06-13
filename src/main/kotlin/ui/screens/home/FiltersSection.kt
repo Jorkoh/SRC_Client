@@ -122,9 +122,10 @@ private fun QueryFilter(
     settings: Settings,
     onFiltersChanged: (Settings) -> Unit
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+    FlowRow(
+        horizontalGap = 16.dp,
+        verticalGap = 8.dp,
+        alignment = Alignment.CenterVertically
     ) {
         OutlinedTextField(
             value = settings.searchQuery,

@@ -24,10 +24,7 @@ import androidx.compose.ui.unit.sp
 import data.local.entities.*
 import org.jetbrains.skija.Codec
 import org.jetbrains.skija.Data
-import ui.screens.components.LoadingIndicator
-import ui.screens.components.PlayerName
-import ui.screens.components.PlayerNames
-import ui.screens.components.RunStatusIndicator
+import ui.screens.components.*
 import ui.theme.linkBlue
 import ui.theme.offWhite
 import ui.utils.FlowRow
@@ -101,15 +98,17 @@ private fun TopComponents(
         }
         Spacer(Modifier.weight(1f))
         weblink?.let {
-            TextButton(
-                onClick = { Desktop.getDesktop().browse(URI(it)) },
-                modifier = Modifier.padding(end = 8.dp)
-            ) {
-                Text(text = "SRC")
-                Icon(
-                    imageVector = vectorXmlResource("ic_open.xml"),
-                    contentDescription = "Open in speedrun.com"
-                )
+            Tooltip("Open in speedrun.com") {
+                TextButton(
+                    onClick = { Desktop.getDesktop().browse(URI(it)) },
+                    modifier = Modifier.padding(end = 8.dp)
+                ) {
+                    Text(text = "SRC")
+                    Icon(
+                        imageVector = vectorXmlResource("ic_open.xml"),
+                        contentDescription = "Open in speedrun.com"
+                    )
+                }
             }
         }
     }
@@ -250,7 +249,7 @@ private fun Status(
     Row {
         Text("Status:")
         Spacer(Modifier.width(16.dp))
-        FlowRow {
+        FlowRow(alignment = Alignment.CenterVertically) {
             RunStatusIndicator(runStatus)
             if (verifier != null) {
                 Text(" by ")

@@ -16,7 +16,7 @@ import kotlin.math.roundToInt
 fun FlowRow(
     horizontalGap: Dp = 0.dp,
     verticalGap: Dp = 0.dp,
-    alignment: Alignment.Horizontal = Alignment.Start,
+    alignment: Alignment.Vertical = Alignment.Top,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) = Layout(content = content, modifier = modifier) { measurables, constraints ->
@@ -47,10 +47,10 @@ fun FlowRow(
     layout(width, height) {
         var y = 0
         rows.forEach { row ->
-            val offset = alignment.align(row.width, width, layoutDirection)
-            var x = offset
+            var x = 0
             row.placeables.forEach { placeable ->
-                placeable.placeRelative(x, y)
+                val yOffset = alignment.align(placeable.height, row.height)
+                placeable.placeRelative(x, y + yOffset)
                 x += placeable.width + horizontalGapPx
             }
             y += row.height + verticalGapPx
